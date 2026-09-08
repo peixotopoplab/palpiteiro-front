@@ -113,7 +113,7 @@ export function SimuladorClient({ configuracaoInicial, concurso }: SimuladorClie
   const concursoClosed = concurso?.status === "fechado";
 
   return (
-    <main className="container-content py-6 space-y-4 pb-36 lg:pb-20">
+    <main className="container-content py-6 space-y-4">
       <div>
         <h1 className="text-headline-lg text-text-primary">Simulador de Volante</h1>
         {concurso && (
@@ -178,7 +178,7 @@ export function SimuladorClient({ configuracaoInicial, concurso }: SimuladorClie
         })}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border-subtle bg-surface-dark/95 backdrop-blur px-4 py-3">
+      <div className="sticky bottom-0 border-t border-border-subtle bg-surface-dark/95 backdrop-blur px-4 py-3 -mx-4">
         <div className="container-content flex gap-2">
           <Button variant="ghost" size="sm" onClick={copiarVolante} className="flex-1"><Copy className="size-4" /> Copiar</Button>
           <Button variant="ghost" size="sm" onClick={compartilhar} className="flex-1"><Share2 className="size-4" /> Compartilhar</Button>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   CheckCircle2, CreditCard, Mail, Bell,
-  BellOff, FileText, HelpCircle, Calendar
+  BellOff, FileText, HelpCircle, Calendar, UserCheck, Clock
 } from "lucide-react";
 import { getCurrentUser } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -76,18 +76,30 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
         </div>
       )}
       {/* Perfil */}
-      <section className="rounded-md border border-border-subtle bg-surface-dark p-4">
+      <section className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="size-12 rounded-full bg-surface-container-high flex items-center justify-center text-headline-md text-text-primary font-bold shrink-0">
+          <div className="size-14 rounded-full bg-surface-container-high flex items-center justify-center text-headline-lg text-text-primary font-bold shrink-0">
             {user.nome.charAt(0).toUpperCase()}
           </div>
-          <div className="min-w-0">
-            <p className="text-title-sm text-text-primary truncate">{user.nome}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-title-sm text-text-primary truncate">{user.nome}</p>
+              <Badge variant={isVip ? "vip" : "free"} />
+            </div>
             <p className="text-body-md text-text-muted truncate">{user.email}</p>
           </div>
-          <div className="ml-auto shrink-0">
-            <Badge variant={isVip ? "vip" : "free"} />
+        </div>
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="flex items-center gap-2 text-label-sm text-text-muted">
+            <UserCheck className="size-3.5 shrink-0 text-tertiary" />
+            {isVip ? "Assinante VIP" : "Plano Gratuito"}
           </div>
+          {subscription?.data_inicio && (
+            <div className="flex items-center gap-2 text-label-sm text-text-muted">
+              <Clock className="size-3.5 shrink-0" />
+              Membro desde {new Date(subscription.data_inicio).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -169,10 +181,11 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
 
       {/* Preferências */}
       <section className="rounded-md border border-border-subtle bg-surface-dark divide-y divide-border-subtle overflow-hidden">
-        <div className="px-4 py-3">
-          <p className="text-label-sm text-text-muted uppercase">Preferências</p>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <p className="text-label-sm text-text-muted uppercase">Preferências e Notificações</p>
+          <p className="text-label-sm text-text-muted">Em breve</p>
         </div>
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 opacity-60">
           <div className="flex items-center gap-3">
             <Mail className="size-4 text-text-muted shrink-0" />
             <div>
@@ -180,12 +193,11 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
               <p className="text-label-sm text-text-muted">Receber análises ao publicar</p>
             </div>
           </div>
-          {/* Toggle — fase 2 quando tiver tabela de preferências */}
           <div className="w-10 h-6 rounded-full bg-primary-container flex items-center justify-end px-1">
             <div className="size-4 rounded-full bg-white" />
           </div>
         </div>
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 opacity-60">
           <div className="flex items-center gap-3">
             <Bell className="size-4 text-text-muted shrink-0" />
             <div>
