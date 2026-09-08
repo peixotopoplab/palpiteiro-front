@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarClock, Trophy } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
@@ -98,6 +99,14 @@ export default async function AnalisePage({ params }: PageProps) {
           precoMensal={precoMensal}
         />
       )}
+
+      {/* Link discreto pro glossário — contexto ideal pra quem encontrou
+          termos técnicos (Zebra, R02, EV+, Duplo) e quer entender */}
+      <p className="text-center pb-2">
+        <Link href="/glossario" className="text-label-sm text-text-muted hover:text-text-primary transition-colors underline underline-offset-2">
+          Não entendeu algum termo? Veja o glossário do modelo
+        </Link>
+      </p>
     </main>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, ClipboardList, History, Trophy } from "lucide-react";
+import { ChevronRight, ClipboardList, History, Trophy, BookOpen, HelpCircle } from "lucide-react";
 import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
 import { Badge } from "@/components/ui/badge";
 import { HomeCTAVip } from "@/components/home-cta-vip";
@@ -82,6 +82,20 @@ export default async function HomePage() {
             <History className="size-5 text-primary" />
             <p className="text-title-sm text-text-primary">Histórico</p>
             <p className="text-label-sm text-text-muted">Concursos anteriores</p>
+          </div>
+        </Link>
+        <Link href="/glossario">
+          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
+            <BookOpen className="size-5 text-primary" />
+            <p className="text-title-sm text-text-primary">Glossário</p>
+            <p className="text-label-sm text-text-muted">Entenda o modelo</p>
+          </div>
+        </Link>
+        <Link href="/contato">
+          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
+            <HelpCircle className="size-5 text-primary" />
+            <p className="text-title-sm text-text-primary">Suporte</p>
+            <p className="text-label-sm text-text-muted">Dúvidas e contato</p>
           </div>
         </Link>
       </section>
