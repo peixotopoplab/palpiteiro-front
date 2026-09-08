@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
@@ -12,12 +13,30 @@ const INITIAL_STATE: AuthActionState = { error: null };
 
 type Modo = "entrar" | "cadastrar";
 
-export default function EntrarPage() {
+function EntrarPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? "/";
+
   const [modo, setModo] = useState<Modo>("entrar");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [signInState, signInAction, signInPending] = useActionState(signIn, INITIAL_STATE);
   const [signUpState, signUpAction, signUpPending] = useActionState(signUp, INITIAL_STATE);
   const [cadastroEnviado, setCadastroEnviado] = useState(false);
+
+  // Redireciona após login bem-sucedido
+  useEffect(() => {
+    if (signInState.success) {
+      router.push(redirectTo);
+    }
+  }, [signInState.success, router, redirectTo]);
+
+  // Redireciona após cadastro bem-sucedido com sessão ativa
+  useEffect(() => {
+    if (signUpState.success === true) {
+      router.push(redirectTo);
+    }
+  }, [signUpState.success, router, redirectTo]);
   const cadastroConcluido = cadastroEnviado && !signUpPending && !signUpState.error;
 
   return (
@@ -208,5 +227,19 @@ function SenhaInput({
         {mostrarSenha ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
     </div>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function EntrarPage() {
+  return (
+    <Suspense fallback={
+      <div className="container-content flex items-center justify-center py-12">
+        <div className="w-8 h-8 rounded-full border-2 border-primary-container border-t-transparent animate-spin" />
+      </div>
+    }>
+      <EntrarPageInner />
+    </Suspense>
   );
 }
