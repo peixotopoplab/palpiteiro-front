@@ -1,0 +1,262 @@
+@import "tailwindcss";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+
+/* ================================================================
+   Palpiteiro Dark Pitch — Design Tokens
+   Fonte: DESIGN.md (substitui design-tokens.md anterior)
+   Paleta Material-3-like completa + tokens diretos usados nos
+   componentes especificados (cards de jogo, badges, CTAs).
+   ================================================================ */
+
+:root {
+  /* --- Paleta estendida (tons/superfícies M3-like) --- */
+  --surface: #101412;
+  --surface-dim: #101412;
+  --surface-bright: #363a38;
+  --surface-container-lowest: #0b0f0d;
+  --surface-container-low: #181c1a;
+  --surface-container: #1c201e;
+  --surface-container-high: #272b28;
+  --surface-container-highest: #323633;
+  --on-surface: #e0e3df;
+  --on-surface-variant: #becabd;
+  --inverse-surface: #e0e3df;
+  --inverse-on-surface: #2d312f;
+  --outline: #889488;
+  --outline-variant: #3f4940;
+  --surface-tint: #7bda96;
+
+  --primary: #7bda96;
+  --on-primary: #00391a;
+  --primary-container: #1e8449;
+  --on-primary-container: #f0ffee;
+  --inverse-primary: #006d38;
+
+  --secondary: #e9c349;
+  --on-secondary: #3c2f00;
+  --secondary-container: #af8d11;
+  --on-secondary-container: #342800;
+
+  --tertiary: #4ae183;
+  --on-tertiary: #003919;
+  --tertiary-container: #008544;
+  --on-tertiary-container: #eeffed;
+
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  --primary-fixed: #96f7b0;
+  --primary-fixed-dim: #7bda96;
+  --on-primary-fixed: #00210d;
+  --on-primary-fixed-variant: #005228;
+  --secondary-fixed: #ffe088;
+  --secondary-fixed-dim: #e9c349;
+  --on-secondary-fixed: #241a00;
+  --on-secondary-fixed-variant: #574500;
+  --tertiary-fixed: #6bfe9c;
+  --tertiary-fixed-dim: #4ae183;
+  --on-tertiary-fixed: #00210c;
+  --on-tertiary-fixed-variant: #005228;
+
+  --background: #101412;
+  --on-background: #e0e3df;
+  --surface-variant: #323633;
+
+  /* --- Tokens diretos (usados literalmente na spec de componentes) --- */
+  --surface-dark: #151a17;
+  --surface-hover: #1c231f;
+  --border-subtle: #232b26;
+  --border-active: #2ecc71;
+  --text-primary: #f5f5f0;
+  --text-muted: #9ca39e;
+  --badge-free: #5a5f5c;
+  --badge-vip: #d4af37;
+  --error-red: #e74c3c;
+
+  /* --- Forma --- */
+  --radius-sm: 0.25rem;
+  --radius-default: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  /* Pills & badges têm um raio próprio (6px) na spec de componentes,
+     não coincide com nenhum degrau da escala "rounded" genérica acima. */
+  --radius-pill: 0.375rem;
+
+  /* --- Layout --- */
+  --max-content-width: 72rem;
+  --gutter-mobile: 1rem;
+  --gutter-desktop: 1.5rem;
+}
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Cores expostas como utilitários Tailwind (bg-*, text-*, border-*) */
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-surface-tint: var(--surface-tint);
+
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-inverse-primary: var(--inverse-primary);
+
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+
+  --color-tertiary: var(--tertiary);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-on-tertiary-container: var(--on-tertiary-container);
+
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
+
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+  --color-on-secondary-fixed-variant: var(--on-secondary-fixed-variant);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-tertiary-fixed-dim: var(--tertiary-fixed-dim);
+  --color-on-tertiary-fixed: var(--on-tertiary-fixed);
+  --color-on-tertiary-fixed-variant: var(--on-tertiary-fixed-variant);
+
+  --color-background: var(--background);
+  --color-on-background: var(--on-background);
+  --color-surface-variant: var(--surface-variant);
+
+  --color-surface-dark: var(--surface-dark);
+  --color-surface-hover: var(--surface-hover);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-active: var(--border-active);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-badge-free: var(--badge-free);
+  --color-badge-vip: var(--badge-vip);
+  --color-error-red: var(--error-red);
+
+  /* Forma */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+
+  /* Escala tipográfica nomeada (DESIGN.md) — size/line-height/weight/tracking */
+  --text-display-lg: 2.5rem;
+  --text-display-lg--line-height: 3rem;
+  --text-display-lg--font-weight: 800;
+  --text-display-lg--letter-spacing: -0.02em;
+
+  --text-display-lg-mobile: 2rem;
+  --text-display-lg-mobile--line-height: 2.375rem;
+  --text-display-lg-mobile--font-weight: 800;
+  --text-display-lg-mobile--letter-spacing: -0.02em;
+
+  --text-headline-lg: 1.75rem;
+  --text-headline-lg--line-height: 2.125rem;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-lg--letter-spacing: -0.01em;
+
+  --text-headline-md: 1.375rem;
+  --text-headline-md--line-height: 1.75rem;
+  --text-headline-md--font-weight: 700;
+  --text-headline-md--letter-spacing: -0.01em;
+
+  --text-title-sm: 1rem;
+  --text-title-sm--line-height: 1.375rem;
+  --text-title-sm--font-weight: 600;
+
+  --text-body-lg: 1rem;
+  --text-body-lg--line-height: 1.5rem;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 0.875rem;
+  --text-body-md--line-height: 1.25rem;
+  --text-body-md--font-weight: 400;
+
+  --text-label-md: 0.75rem;
+  --text-label-md--line-height: 1rem;
+  --text-label-md--font-weight: 600;
+  --text-label-md--letter-spacing: 0.04em;
+
+  --text-label-sm: 0.625rem;
+  --text-label-sm--line-height: 0.875rem;
+  --text-label-sm--font-weight: 700;
+  --text-label-sm--letter-spacing: 0.06em;
+
+  --text-metric-val: 1.5rem;
+  --text-metric-val--line-height: 1.75rem;
+  --text-metric-val--font-weight: 700;
+  --text-metric-val--letter-spacing: -0.03em;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Container padrão de conteúdo — max-width 72rem, gutters responsivos */
+.container-content {
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin-inline: auto;
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 1024px) {
+  .container-content {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+/* Glow ambiente para estados ativos (pick confirmado, card VIP) */
+.glow-success {
+  box-shadow: 0 0 16px rgba(46, 204, 113, 0.15);
+}
+.glow-vip {
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.18);
+}
+
+/* ================================================================
+   Responsividade — ajustes globais
+   Desktop (≥1024px): nav inferior some, conteúdo usa max-width
+   centrado. Mobile: full-width com gutters de 1rem.
+   ================================================================ */
+
+/* Esconde a bottom nav em desktop — espaço suficiente na topbar */
+@media (min-width: 1024px) {
+  .bottom-nav-mobile {
+    display: none;
+  }
+}
