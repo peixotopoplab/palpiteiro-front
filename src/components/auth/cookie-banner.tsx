@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { LegalLink } from "@/components/legal-drawer";
 
 /**
  * Banner de consentimento de cookies — aparece apenas pra visitantes
@@ -42,9 +42,9 @@ export function CookieBanner() {
         <p className="text-body-md text-text-muted">
           Usamos cookies essenciais para funcionamento do app. Ao continuar, você concorda
           com nossa{" "}
-          <Link href="/privacidade" className="text-badge-vip underline underline-offset-2">
+          <LegalLink doc="privacidade" className="text-badge-vip underline underline-offset-2">
             Política de Privacidade
-          </Link>
+          </LegalLink>
           .
         </p>
         <button

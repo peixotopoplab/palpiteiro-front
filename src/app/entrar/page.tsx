@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LegalLink } from "@/components/legal-drawer";
 import { ConsentCheckbox } from "@/components/auth/consent-checkbox";
 import { signIn, signUp, type AuthActionState } from "./actions";
 
@@ -144,13 +145,13 @@ function EntrarPageInner() {
       <footer className="text-center space-y-2 max-w-sm">
         <p className="text-label-sm text-text-muted">
           Ao continuar, você concorda com os{" "}
-          <Link href="/termos" className="text-badge-vip">
+          <LegalLink doc="termos" className="text-badge-vip">
             Termos de Uso
-          </Link>{" "}
+          </LegalLink>{" "}
           e a{" "}
-          <Link href="/privacidade" className="text-badge-vip">
+          <LegalLink doc="privacidade" className="text-badge-vip">
             Política de Privacidade
-          </Link>
+          </LegalLink>
           .
         </p>
         <p className="text-label-sm text-text-muted">
