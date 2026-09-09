@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getPaymentClient } from "@/lib/mercadopago";
+import { enviarConfirmacaoVip } from "@/lib/email";
 
 /**
  * Webhook do Mercado Pago — recebe notificações de pagamento.
@@ -139,6 +140,22 @@ export async function POST(request: NextRequest) {
       });
 
       console.log(`[webhook] VIP ativado para usuário ${userId}`);
+
+      // E-mail de confirmação VIP — busca dados do usuário e dispara
+      try {
+        const { data: perfil } = await supabase
+          .from("users")
+          .select("nome, email")
+          .eq("id", userId)
+          .single();
+        if (perfil) {
+          enviarConfirmacaoVip({
+            nome: perfil.nome,
+            email: perfil.email,
+            dataFim,
+          }).catch((err) => console.error("[webhook] falha e-mail VIP:", err));
+        }
+      } catch { /* não bloqueia o webhook se o e-mail falhar */ }
     } else if (status === "cancelled" || status === "refunded" || status === "charged_back") {
       // Cancela VIP
       await supabase

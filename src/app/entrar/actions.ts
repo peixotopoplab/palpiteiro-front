@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { enviarBoasVindas } from "@/lib/email";
 
 export interface AuthActionState {
   error: string | null;
@@ -80,6 +81,12 @@ export async function signUp(
       user_id: data.user.id,
       termos_versao: "v1.0-2026-09",
       acao: "signup",
+    });
+
+    // E-mail de boas-vindas — disparo assíncrono, sem bloquear o retorno
+    // Se falhar, não quebra o cadastro (o usuário já foi criado)
+    enviarBoasVindas({ nome, email }).catch((err) => {
+      console.error("[signUp] falha ao enviar e-mail de boas-vindas:", err);
     });
   }
 
