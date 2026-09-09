@@ -15,11 +15,12 @@ export default function TermosPage() {
       </div>
 
       <Secao titulo="1. Natureza do Serviço">
-        O Palpiteiro App é uma ferramenta estritamente informativa, estatística e de modelagem de
-        probabilidades voltada ao futebol e aos concursos oficiais da Loteca. O Palpiteiro App
-        não é uma casa de apostas, não recebe apostas, não intermedia pagamentos de jogos
-        lotéricos e não comercializa bilhetes oficiais. As análises, palpites e probabilidades
-        são gerados por modelo algorítmico próprio e têm caráter exclusivamente educativo e
+        O Palpiteiro é um serviço de publicação editorial digital de conteúdo informativo e
+        estatístico voltado ao futebol e aos concursos oficiais da Loteca da Caixa Econômica
+        Federal. O serviço compreende a edição e publicação de listas de análises estatísticas
+        esportivas, boletins periódicos de dados e probabilidades, e acesso a conteúdo editorial
+        digital informativo. O Palpiteiro não é uma casa de apostas, não recebe apostas e não
+        intermedia pagamentos lotéricos. As análises têm caráter exclusivamente educativo e
         informativo — não constituem aconselhamento financeiro nem garantia de premiação.
       </Secao>
 
@@ -45,9 +46,9 @@ export default function TermosPage() {
 
       <Secao titulo="5. Planos e Assinatura">
         O acesso ao plano gratuito (Free) é permanente e não exige pagamento. O plano VIP é
-        uma assinatura recorrente processada pelo Mercado Pago. Os preços e condições são
-        definidos pela equipe do Palpiteiro e podem ser alterados mediante aviso prévio de
-        30 dias. O cancelamento pode ser feito a qualquer momento na área{" "}
+        uma assinatura recorrente de acesso a publicações e listas de análises estatísticas
+        esportivas, processada pelo Mercado Pago. Os preços e condições podem ser alterados
+        mediante aviso prévio de 30 dias. O cancelamento pode ser feito a qualquer momento na área{" "}
         <Link href="/conta" className="text-badge-vip underline underline-offset-2">Minha Conta</Link>.
       </Secao>
 
