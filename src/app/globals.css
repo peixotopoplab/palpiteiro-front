@@ -14,37 +14,37 @@
 
 :root {
   /* --- Paleta estendida (tons/superfícies M3-like) --- */
-  --surface: #101412;
-  --surface-dim: #101412;
-  --surface-bright: #363a38;
-  --surface-container-lowest: #0b0f0d;
-  --surface-container-low: #181c1a;
-  --surface-container: #1c201e;
-  --surface-container-high: #272b28;
-  --surface-container-highest: #323633;
-  --on-surface: #e0e3df;
-  --on-surface-variant: #becabd;
-  --inverse-surface: #e0e3df;
-  --inverse-on-surface: #2d312f;
-  --outline: #889488;
-  --outline-variant: #3f4940;
-  --surface-tint: #7bda96;
+  --surface: #1A2220;
+  --surface-dim: #151C1A;
+  --surface-bright: #2C3830;
+  --surface-container-lowest: #141C19;
+  --surface-container-low: #1A2220;
+  --surface-container: #222B27;
+  --surface-container-high: #2C3830;
+  --surface-container-highest: #374840;
+  --on-surface: #EDF2EE;
+  --on-surface-variant: #9BAFA4;
+  --inverse-surface: #EDF2EE;
+  --inverse-on-surface: #222B27;
+  --outline: #4A6055;
+  --outline-variant: #2C3830;
+  --surface-tint: #30B070;
 
-  --primary: #7bda96;
-  --on-primary: #00391a;
-  --primary-container: #1e8449;
-  --on-primary-container: #f0ffee;
-  --inverse-primary: #006d38;
+  --primary: #30B070;
+  --on-primary: #0A1F14;
+  --primary-container: #1E6B45;
+  --on-primary-container: #C8F0DC;
+  --inverse-primary: #1A5A38;
 
-  --secondary: #e9c349;
-  --on-secondary: #3c2f00;
-  --secondary-container: #af8d11;
-  --on-secondary-container: #342800;
+  --secondary: #D4AF37;
+  --on-secondary: #2A1F00;
+  --secondary-container: #8A7020;
+  --on-secondary-container: #FFF0B0;
 
-  --tertiary: #4ae183;
-  --on-tertiary: #003919;
-  --tertiary-container: #008544;
-  --on-tertiary-container: #eeffed;
+  --tertiary: #30B070;
+  --on-tertiary: #0A1F14;
+  --tertiary-container: #1E6B45;
+  --on-tertiary-container: #C8F0DC;
 
   --error: #ffb4ab;
   --on-error: #690005;
@@ -64,20 +64,20 @@
   --on-tertiary-fixed: #00210c;
   --on-tertiary-fixed-variant: #005228;
 
-  --background: #101412;
-  --on-background: #e0e3df;
-  --surface-variant: #323633;
+  --background: #1A2220;
+  --on-background: #EDF2EE;
+  --surface-variant: #2C3830;
 
-  /* --- Tokens diretos (usados literalmente na spec de componentes) --- */
-  --surface-dark: #151a17;
-  --surface-hover: #1c231f;
-  --border-subtle: #232b26;
-  --border-active: #2ecc71;
-  --text-primary: #f5f5f0;
-  --text-muted: #9ca39e;
-  --badge-free: #5a5f5c;
-  --badge-vip: #d4af37;
-  --error-red: #e74c3c;
+  /* --- Tokens diretos — Paleta Slate Médio (Opção 2) --- */
+  --surface-dark: #222B27;
+  --surface-hover: #2C3830;
+  --border-subtle: #2C3830;
+  --border-active: #30B070;
+  --text-primary: #EDF2EE;
+  --text-muted: #9BAFA4;
+  --badge-free: #5A7060;
+  --badge-vip: #D4AF37;
+  --error-red: #E87B6E;
 
   /* --- Forma --- */
   --radius-sm: 0.25rem;
@@ -224,6 +224,7 @@ body {
   background: var(--color-background);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Container padrão de conteúdo — max-width 72rem, gutters responsivos */
@@ -242,7 +243,7 @@ body {
 
 /* Glow ambiente para estados ativos (pick confirmado, card VIP) */
 .glow-success {
-  box-shadow: 0 0 16px rgba(46, 204, 113, 0.15);
+  box-shadow: 0 0 16px rgba(48, 176, 112, 0.18);
 }
 .glow-vip {
   box-shadow: 0 0 16px rgba(212, 175, 55, 0.18);
