@@ -13,7 +13,7 @@ export function EmConstrucaoPopup() {
   useEffect(() => {
     let mostrar = true;
     try {
-      mostrar = !localStorage.getItem(STORAGE_KEY);
+      mostrar = !sessionStorage.getItem(STORAGE_KEY);
     } catch { /* silencia */ }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisivel(mostrar);
@@ -21,7 +21,7 @@ export function EmConstrucaoPopup() {
 
   const fechar = () => {
     try {
-      localStorage.setItem(STORAGE_KEY, "true");
+      sessionStorage.setItem(STORAGE_KEY, "true");
     } catch { /* silencia */ }
     setVisivel(false);
   };
