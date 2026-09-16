@@ -3,6 +3,7 @@ import { ChevronRight, ClipboardList, History, Trophy, BookOpen, HelpCircle } fr
 import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
 import { Badge } from "@/components/ui/badge";
 import { HomeCTAVip } from "@/components/home-cta-vip";
+import { EmConstrucaoPopup } from "@/components/em-construcao-popup";
 
 export default async function HomePage() {
   const [user, analises, produtoVip] = await Promise.all([getCurrentUser(), getAnalises(6), getProdutoVip()]);
@@ -102,6 +103,9 @@ export default async function HomePage() {
 
       {/* CTA VIP — client component pra usar o AuthModal */}
       {!isVip && <HomeCTAVip userState={userState} precoMensal={precoMensal} />}
+
+      {/* Popup de lançamento — só pra quem não é VIP e nunca fechou */}
+      {!isVip && <EmConstrucaoPopup />}
     </main>
   );
 }
