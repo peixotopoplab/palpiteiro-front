@@ -16,7 +16,10 @@ import { enviarConfirmacaoVip, enviarCancelamentoVip } from "@/lib/email";
  * Documentação MP: https://www.mercadopago.com.br/developers/pt/docs/your-integrations/notifications/webhooks
  */
 
-// Cliente com service role — escrita sem RLS
+// Cliente com service role — escrita sem RLS.
+// SEGURANÇA: SUPABASE_SERVICE_ROLE_KEY e MERCADOPAGO_WEBHOOK_SECRET NUNCA devem
+// ter prefixo NEXT_PUBLIC_ — isso os exporia no bundle do client-side.
+// NEXT_PUBLIC_SUPABASE_URL é a única exceção intencional (URL não é segredo).
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,6 +46,14 @@ async function validarAssinatura(request: NextRequest): Promise<boolean> {
   const ts = parts["ts"];
   const v1 = parts["v1"];
   if (!ts || !v1) return false;
+
+  // Anti-replay: rejeita requests com timestamp mais antigo que 5 minutos
+  const JANELA_REPLAY_MS = 5 * 60 * 1000;
+  const tsMs = parseInt(ts, 10) * 1000;
+  if (Math.abs(Date.now() - tsMs) > JANELA_REPLAY_MS) {
+    console.warn("[webhook] Timestamp fora da janela anti-replay", { ts, agora: Date.now() });
+    return false;
+  }
 
   const manifest = `id:${xRequestId};request-id:${xRequestId};ts:${ts};`;
   const encoder = new TextEncoder();
@@ -205,9 +216,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[webhook] Erro ao processar pagamento", paymentId, err);
-    // Retorna 200 mesmo em erro interno — MP reprocessa se receber 4xx/5xx
-    // O log acima captura o problema pra investigação manual
+    // Log estruturado de erro crítico — filtrável nos Vercel Logs por "[webhook][CRITICO]"
+    // Cenário mais grave: cliente pagou (approved) mas ativação do VIP falhou.
+    // Monitorar esses logs ativamente — sem alerta, vira reclamação de cliente.
+    console.error("[webhook][CRITICO] Erro ao processar pagamento", {
+      paymentId,
+      erro: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    });
+    // Retorna 200 mesmo em erro interno — MP não reenvia se receber 2xx.
+    // O log acima é a única barreira: sem monitoramento de logs, erros somem.
     return NextResponse.json({ ok: false, internal_error: true });
   }
 }

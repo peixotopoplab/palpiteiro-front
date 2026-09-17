@@ -15,11 +15,56 @@ import { createServerClient } from "@supabase/ssr";
  *   /historico         — Histórico de concursos
  *
  * /simulador é PÚBLICO — guest pode usar, mas salvar simulação abre modal de cadastro.
+ *
+ * Rate limiting simples para o endpoint de webhook do MP:
+ * Aceita no máximo 30 requests por IP por minuto.
+ * Requests inválidos (sem assinatura) são barrados pelo webhook handler mesmo assim —
+ * isso reduz a superfície de probing e DoS no endpoint público.
  */
 
 const ROTAS_PROTEGIDAS = ["/conta", "/historico"];
 
+// Rate limit simples em memória — adequado para Vercel Edge/Serverless com
+// instância única por região. Para multi-região, usar KV (Vercel KV ou Upstash).
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WEBHOOK = 30; // requests por janela
+const RATE_LIMIT_JANELA_MS = 60 * 1000; // 1 minuto
+
+function checkRateLimit(ip: string): boolean {
+  const agora = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || agora > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: agora + RATE_LIMIT_JANELA_MS });
+    return true; // permitido
+  }
+
+  if (entry.count >= RATE_LIMIT_WEBHOOK) {
+    return false; // bloqueado
+  }
+
+  entry.count++;
+  return true; // permitido
+}
+
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Rate limiting no endpoint do webhook
+  if (pathname === "/api/webhooks/mercadopago") {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown";
+
+    if (!checkRateLimit(ip)) {
+      console.warn("[middleware] Rate limit atingido para IP:", ip);
+      return new NextResponse("Too Many Requests", { status: 429 });
+    }
+    // Webhook não precisa de renovação de sessão — retorna direto
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -42,7 +87,6 @@ export async function middleware(request: NextRequest) {
   // Renova sessão em todas as rotas (necessário pro SSR do Supabase funcionar)
   const { data: { user } } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const rotaProtegida = ROTAS_PROTEGIDAS.some((r) => pathname.startsWith(r));
 
   if (rotaProtegida && !user) {
@@ -60,3 +104,4 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
+
