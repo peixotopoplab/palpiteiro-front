@@ -192,3 +192,86 @@ export async function enviarConfirmacaoVip(params: {
     html,
   });
 }
+
+/**
+ * E-mail de cancelamento/expiração VIP.
+ * Regra de negócio: 'cancelled' mantém acesso até fim do período pago;
+ * 'refunded' e 'charged_back' revogam imediatamente.
+ */
+export async function enviarCancelamentoVip(params: {
+  nome: string;
+  email: string;
+  dataExpiracao: Date;
+  motivo: "cancelled" | "refunded" | "charged_back";
+}) {
+  const resend = getResendClient();
+  const primeiroNome = params.nome.split(" ")[0];
+  const dataFormatada = params.dataExpiracao.toLocaleDateString("pt-BR", {
+    day: "2-digit", month: "long", year: "numeric",
+  });
+
+  const textoPorMotivo: Record<typeof params.motivo, string> = {
+    cancelled: `Seu acesso VIP permanece ativo até <strong style="color:#EDF2EE">${dataFormatada}</strong> (fim do período já pago) e não será renovado automaticamente.`,
+    refunded: `Identificamos o estorno do seu pagamento. Seu acesso VIP foi encerrado em <strong style="color:#EDF2EE">${dataFormatada}</strong>.`,
+    charged_back: `Identificamos uma contestação do seu pagamento. Seu acesso VIP foi encerrado em <strong style="color:#EDF2EE">${dataFormatada}</strong>.`,
+  };
+
+  const html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#1A2220;font-family:Inter,Arial,sans-serif;color:#EDF2EE;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;padding:32px 16px;">
+    <tr>
+      <td>
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="background:#222B27;border:1px solid #2C3830;border-radius:12px;padding:24px;margin-bottom:24px;">
+          <tr>
+            <td style="text-align:center;">
+              <p style="margin:0 0 8px;font-size:28px;">📋</p>
+              <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#EDF2EE;">
+                Assinatura VIP cancelada
+              </h1>
+              <p style="margin:0 0 16px;font-size:15px;color:#EDF2EE;line-height:1.6;">
+                Olá, ${primeiroNome}. ${textoPorMotivo[params.motivo]}
+              </p>
+              <p style="margin:0 0 20px;font-size:13px;color:#9BAFA4;line-height:1.6;">
+                Você continua com acesso ao plano Free — 3 jogos do concurso vigente,
+                simulador e glossário. Se quiser reativar o VIP a qualquer momento,
+                é só assinar de novo.
+              </p>
+              <a href="${SITE_URL}/conta"
+                style="display:inline-block;background:#1E6B45;color:#C8F0DC;text-decoration:none;
+                       font-weight:700;font-size:15px;padding:12px 32px;border-radius:8px;">
+                Reativar VIP
+              </a>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="text-align:center;padding-top:8px;border-top:1px solid #2C3830;">
+              <p style="margin:12px 0 0;font-size:11px;color:#5A7060;">
+                Palpiteiro · Independente da CEF · +18 anos · Jogue com responsabilidade
+              </p>
+              <p style="margin:6px 0 0;font-size:11px;color:#5A7060;">
+                <a href="${SITE_URL}/privacidade" style="color:#5A7060;">Privacidade</a> ·
+                <a href="${SITE_URL}/termos" style="color:#5A7060;">Termos</a> ·
+                <a href="${SITE_URL}/contato" style="color:#5A7060;">Contato</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  return resend.emails.send({
+    from: FROM,
+    to: params.email,
+    subject: "Sua assinatura VIP Palpiteiro foi cancelada",
+    html,
+  });
+}

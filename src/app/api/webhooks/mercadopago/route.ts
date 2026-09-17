@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getPaymentClient } from "@/lib/mercadopago";
-import { enviarConfirmacaoVip } from "@/lib/email";
+import { enviarConfirmacaoVip, enviarCancelamentoVip } from "@/lib/email";
 
 /**
  * Webhook do Mercado Pago — recebe notificações de pagamento.
@@ -157,18 +157,50 @@ export async function POST(request: NextRequest) {
         }
       } catch { /* não bloqueia o webhook se o e-mail falhar */ }
     } else if (status === "cancelled" || status === "refunded" || status === "charged_back") {
-      // Cancela VIP
-      await supabase
+      // Busca dados do usuário para e-mail e data de expiração
+      const { data: perfil } = await supabase
         .from("users")
-        .update({ status: "free" })
-        .eq("id", userId);
+        .select("nome, email")
+        .eq("id", userId)
+        .single();
+
+      const { data: assinatura } = await supabase
+        .from("subscriptions")
+        .select("data_fim")
+        .eq("mercadopago_subscription_id", String(paymentId))
+        .maybeSingle();
+
+      // Regra de negócio:
+      // 'cancelled' → mantém acesso até data_fim (período já pago, não renova)
+      // 'refunded' e 'charged_back' → revoga imediatamente
+      const revogarImediatamente = status === "refunded" || status === "charged_back";
+
+      if (revogarImediatamente) {
+        await supabase
+          .from("users")
+          .update({ status: "free" })
+          .eq("id", userId);
+      }
 
       await supabase
         .from("subscriptions")
         .update({ status: "cancelada", atualizado_em: new Date().toISOString() })
         .eq("mercadopago_subscription_id", String(paymentId));
 
-      console.log(`[webhook] VIP cancelado para usuário ${userId} — status MP: ${status}`);
+      console.log(`[webhook] VIP ${revogarImediatamente ? "revogado" : "cancelamento agendado"} para ${userId} — status MP: ${status}`);
+
+      // E-mail de cancelamento
+      if (perfil) {
+        const dataExpiracao = assinatura?.data_fim
+          ? new Date(assinatura.data_fim)
+          : new Date();
+        enviarCancelamentoVip({
+          nome: perfil.nome,
+          email: perfil.email,
+          dataExpiracao,
+          motivo: status as "cancelled" | "refunded" | "charged_back",
+        }).catch((err) => console.error("[webhook] falha e-mail cancelamento:", err));
+      }
     }
 
     return NextResponse.json({ ok: true });
