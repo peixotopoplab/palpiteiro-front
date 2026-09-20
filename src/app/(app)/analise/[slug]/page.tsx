@@ -84,14 +84,16 @@ export default async function AnalisePage({ params }: PageProps) {
         </div>
       </header>
 
-      {/* Grade completa — liberados + bloqueados na mesma lista */}
+      {/* Grade de jogos — liberados primeiro, paywall no meio, bloqueados depois */}
       <div className="space-y-2">
-        {dados.jogos.map((jogo) => (
-          <MatchCard key={jogo.numero} jogo={jogo} />
-        ))}
+        {dados.jogos
+          .filter((j) => !("bloqueado" in j))
+          .map((jogo) => (
+            <MatchCard key={jogo.numero} jogo={jogo} />
+          ))}
       </div>
 
-      {/* Paywall — só aparece se há jogos bloqueados */}
+      {/* Paywall — entre os liberados e os bloqueados */}
       {qtdBloqueados > 0 && (
         <PaywallCard
           jogosRestantes={qtdBloqueados}
@@ -100,8 +102,18 @@ export default async function AnalisePage({ params }: PageProps) {
         />
       )}
 
-      {/* Link discreto pro glossário — contexto ideal pra quem encontrou
-          termos técnicos (Zebra, R02, EV+, Duplo) e quer entender */}
+      {/* Jogos bloqueados — times visíveis, dados analíticos ocultados */}
+      {qtdBloqueados > 0 && (
+        <div className="space-y-2">
+          {dados.jogos
+            .filter((j) => "bloqueado" in j && j.bloqueado)
+            .map((jogo) => (
+              <MatchCard key={jogo.numero} jogo={jogo} />
+            ))}
+        </div>
+      )}
+
+      {/* Link discreto pro glossário */}
       <p className="text-center pb-2">
         <Link href="/glossario" className="text-label-sm text-text-muted hover:text-text-primary transition-colors underline underline-offset-2">
           Não entendeu algum termo? Veja o glossário do modelo
