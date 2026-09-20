@@ -119,7 +119,10 @@ export function tipoColuna(coluna: Coluna): "seco" | "duplo" | "triplo" {
   return "seco";
 }
 
-/** true se a opção de coluna ("1" | "X" | "2") está contida na recomendação. */
+/** true se a opção de coluna ("1" | "X" | "2") está contida na recomendação.
+ *  Usa busca de caractere exato — evita falso positivo de "12".includes("1") === true
+ *  quando a recomendação é duplo "12" mas queremos saber se "1" ou "2" individualmente. */
 export function colunaSelecionada(coluna_recomendada: Coluna, opcao: "1" | "X" | "2") {
-  return coluna_recomendada.includes(opcao);
+  // Split em caracteres individuais: "1X2" → ["1","X","2"]
+  return coluna_recomendada.split("").includes(opcao);
 }
