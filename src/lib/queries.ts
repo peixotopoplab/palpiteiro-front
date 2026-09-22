@@ -1,6 +1,12 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Analise, AnaliseJogos, Jogo } from "@/types/analise";
+import type {
+  JogosDoDiaPublicacao,
+  JogosDoDiaData,
+  JogoDoDiaExibicao,
+  JogoDoDiaBloqueado,
+} from "@/types/jogos-do-dia";
 
 export type UserStatus = "free" | "vip";
 
@@ -153,3 +159,70 @@ export function getUserState(user: CurrentUser | null): UserState {
   if (!user) return "guest";
   return user.status === "vip" ? "vip" : "free";
 }
+
+
+export const getJogosDoDiaVigente = cache(async (
+  userStatus: UserStatus | null
+): Promise<JogosDoDiaPublicacao | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("jogos_do_dia")
+    .select("id, slug, titulo, data_jogos, publicado_em, json_data")
+    .eq("status", "publicado")
+    .order("publicado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const dadosCompletos = data.json_data as JogosDoDiaData;
+  const totalJogos = dadosCompletos.jogos.length;
+  const isVip = userStatus === "vip";
+  const LIMITE_FREE = 2;
+
+  const jogos: JogoDoDiaExibicao[] = dadosCompletos.jogos.map((jogo, idx) => {
+    if (isVip || idx < LIMITE_FREE) return jogo;
+    const bloqueado: JogoDoDiaBloqueado = {
+      numero: jogo.numero,
+      mandante: jogo.mandante,
+      visitante: jogo.visitante,
+      competicao: jogo.competicao,
+      horario: jogo.horario,
+      bloqueado: true as const,
+    };
+    return bloqueado;
+  });
+
+  return {
+    id: data.id,
+    slug: data.slug,
+    titulo: data.titulo,
+    data_jogos: data.data_jogos,
+    publicado_em: data.publicado_em,
+    dados: { ...dadosCompletos, jogos } as unknown as JogosDoDiaData,
+    totalJogos,
+  };
+});
+
+export const getJogosDoDiaHistorico = cache(async (limite = 10) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("jogos_do_dia")
+    .select("id, slug, titulo, data_jogos, publicado_em")
+    .eq("status", "publicado")
+    .order("publicado_em", { ascending: false })
+    .limit(limite);
+  return data ?? [];
+});
+
+/** Histórico de análises Loteca — limitado a 10 */
+export const getAnalisesHistorico = cache(async (limite = 10) => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("analyses")
+    .select("id, slug, titulo, concurso_numero, publicado_em")
+    .eq("status", "publicado")
+    .order("publicado_em", { ascending: false })
+    .limit(limite);
+  return data ?? [];
+});

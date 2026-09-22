@@ -1,111 +1,119 @@
 import Link from "next/link";
-import { ChevronRight, ClipboardList, History, Trophy, BookOpen, HelpCircle } from "lucide-react";
-import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
+import { ChevronRight, ClipboardList, Trophy, CalendarDays } from "lucide-react";
+import { getCurrentUser, getAnalises, getProdutoVip, getUserState, getJogosDoDiaVigente, getJogosDoDiaHistorico, getAnalisesHistorico } from "@/lib/queries";
 import { Badge } from "@/components/ui/badge";
 import { HomeCTAVip } from "@/components/home-cta-vip";
-import { EmConstrucaoPopup } from "@/components/em-construcao-popup";
 
 export default async function HomePage() {
-  const [user, analises, produtoVip] = await Promise.all([getCurrentUser(), getAnalises(6), getProdutoVip()]);
+  const [user, analises, produtoVip, jogosDoDia] = await Promise.all([
+    getCurrentUser(),
+    getAnalises(1),
+    getProdutoVip(),
+    getJogosDoDiaVigente(null), // guest view for home
+  ]);
   const userState = getUserState(user);
-  const precoMensal = produtoVip?.tipo_desconto === "fixo" ? Number(produtoVip.valor_desconto) : undefined;
   const isVip = userState === "vip";
   const analiseAtiva = analises[0] ?? null;
+  const precoMensal = produtoVip?.tipo_desconto === "fixo" ? Number(produtoVip.valor_desconto) : undefined;
 
   return (
-    <main className="container-content py-5 space-y-5">
-      {/* Card hero */}
-      {analiseAtiva ? (
-        <div className="rounded-lg border border-border-subtle bg-surface-dark p-4 space-y-3">
+    <main className="container-content py-5 space-y-6">
+
+      {/* ── Seção Loteca ── */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-label-sm text-tertiary">
-              <span className="size-1.5 rounded-full bg-tertiary inline-block" />
-              Análise publicada
-            </span>
+            <Trophy className="size-4 text-badge-vip" />
+            <h2 className="text-title-sm text-text-primary">Loteca</h2>
           </div>
-          <h1 className="text-headline-lg text-text-primary">{analiseAtiva.titulo}</h1>
-          <Link
-            href={`/analise/${analiseAtiva.slug}`}
-            className="flex items-center justify-center w-full rounded-md bg-primary-container text-on-primary-container text-title-sm font-semibold py-3 hover:bg-[#176839] transition-colors"
-          >
-            Acessar Análise Completa →
+          <Link href="/analise/historico" className="text-label-sm text-text-muted hover:text-text-primary transition-colors">
+            Histórico
           </Link>
         </div>
-      ) : (
-        <div className="rounded-lg border border-border-subtle bg-surface-dark p-4 text-center space-y-2">
-          <Trophy className="size-8 mx-auto text-text-muted" />
-          <p className="text-title-sm text-text-muted">Nenhum concurso publicado ainda.</p>
+
+        {analiseAtiva ? (
+          <Link
+            href={`/analise/${analiseAtiva.slug}`}
+            className="flex items-center justify-between gap-3 rounded-md border border-badge-vip/30 bg-surface-dark px-4 py-3 hover:bg-surface-hover transition-colors"
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-flex items-center gap-1 text-label-sm text-tertiary">
+                  <span className="size-1.5 rounded-full bg-tertiary inline-block" />
+                  Publicado
+                </span>
+              </div>
+              <p className="text-title-sm text-text-primary truncate">{analiseAtiva.titulo}</p>
+              {analiseAtiva.publicado_em && (
+                <p className="text-label-sm text-text-muted">
+                  {new Date(analiseAtiva.publicado_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                </p>
+              )}
+            </div>
+            <ChevronRight className="size-4 text-text-muted shrink-0" />
+          </Link>
+        ) : (
+          <div className="rounded-md border border-border-subtle bg-surface-dark px-4 py-3 text-center">
+            <p className="text-body-md text-text-muted">Nenhum concurso publicado ainda.</p>
+          </div>
+        )}
+      </section>
+
+      {/* ── Seção Jogos do Dia ── */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="size-4 text-primary" />
+            <h2 className="text-title-sm text-text-primary">Jogos do Dia</h2>
+          </div>
+          <Link href="/jogos-do-dia/historico" className="text-label-sm text-text-muted hover:text-text-primary transition-colors">
+            Histórico
+          </Link>
         </div>
-      )}
 
-      {/* Lista de análises */}
-      {analises.length > 0 && (
-        <section className="space-y-2">
-          <p className="text-label-sm text-text-muted uppercase px-1">Acesso rápido</p>
-          <div className="rounded-md border border-border-subtle bg-surface-dark divide-y divide-border-subtle overflow-hidden">
-            {analises.map((a) => (
-              <Link
-                key={a.id}
-                href={`/analise/${a.slug}`}
-                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-surface-hover transition-colors"
-              >
-                <div className="min-w-0">
-                  <p className="text-title-sm text-text-primary truncate">{a.titulo}</p>
-                  {a.publicado_em && (
-                    <p className="text-label-sm text-text-muted">
-                      {new Date(a.publicado_em).toLocaleDateString("pt-BR", {
-                        day: "2-digit", month: "short",
-                      })}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={isVip ? "vip" : "free"} icon={null} />
-                  <ChevronRight className="size-4 text-text-muted" />
-                </div>
-              </Link>
-            ))}
+        {jogosDoDia ? (
+          <Link
+            href="/jogos-do-dia"
+            className="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-dark px-4 py-3 hover:bg-surface-hover transition-colors"
+          >
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="inline-flex items-center gap-1 text-label-sm text-tertiary">
+                  <span className="size-1.5 rounded-full bg-tertiary inline-block" />
+                  Hoje
+                </span>
+              </div>
+              <p className="text-title-sm text-text-primary truncate">{jogosDoDia.titulo}</p>
+              <p className="text-label-sm text-text-muted">{jogosDoDia.totalJogos} jogos analisados</p>
+            </div>
+            <ChevronRight className="size-4 text-text-muted shrink-0" />
+          </Link>
+        ) : (
+          <div className="rounded-md border border-border-subtle bg-surface-dark px-4 py-3 text-center">
+            <p className="text-body-md text-text-muted">Nenhuma análise publicada hoje.</p>
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
-      {/* Ações rápidas */}
-      <section className="grid grid-cols-2 gap-2">
+      {/* ── Simulador ── */}
+      <section>
         <Link href="/simulador">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <ClipboardList className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Simulador</p>
-            <p className="text-label-sm text-text-muted">Monte seu volante</p>
-          </div>
-        </Link>
-        <Link href="/historico">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <History className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Histórico</p>
-            <p className="text-label-sm text-text-muted">Concursos anteriores</p>
-          </div>
-        </Link>
-        <Link href="/glossario">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <BookOpen className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Glossário</p>
-            <p className="text-label-sm text-text-muted">Entenda o modelo</p>
-          </div>
-        </Link>
-        <Link href="/contato">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <HelpCircle className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Suporte</p>
-            <p className="text-label-sm text-text-muted">Dúvidas e contato</p>
+          <div className="flex items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface-dark px-4 py-3 hover:bg-surface-hover transition-colors">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="size-5 text-primary shrink-0" />
+              <div>
+                <p className="text-title-sm text-text-primary">Simulador de Volante</p>
+                <p className="text-label-sm text-text-muted">Monte e calcule o custo do seu volante</p>
+              </div>
+            </div>
+            <ChevronRight className="size-4 text-text-muted shrink-0" />
           </div>
         </Link>
       </section>
 
-      {/* CTA VIP — client component pra usar o AuthModal */}
+      {/* ── CTA VIP ── */}
       {!isVip && <HomeCTAVip userState={userState} precoMensal={precoMensal} />}
 
-      {/* Popup de lançamento — só pra quem não é VIP e nunca fechou */}
-      {!isVip && <EmConstrucaoPopup />}
     </main>
   );
 }
