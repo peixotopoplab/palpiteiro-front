@@ -152,6 +152,9 @@ export async function POST(request: NextRequest) {
 
       console.log(`[webhook] VIP ativado para usuário ${userId}`);
 
+      // Evento de analytics
+      void (async () => { try { await supabase.from("usage_events").insert({ tipo_evento: "vip_convertido", user_id: userId, metadata: { plano: "mensal" } }); } catch {} })();
+
       // E-mail de confirmação VIP — busca dados do usuário e dispara
       try {
         const { data: perfil } = await supabase
@@ -199,6 +202,9 @@ export async function POST(request: NextRequest) {
         .eq("mercadopago_subscription_id", String(paymentId));
 
       console.log(`[webhook] VIP ${revogarImediatamente ? "revogado" : "cancelamento agendado"} para ${userId} — status MP: ${status}`);
+
+      // Evento de analytics
+      void (async () => { try { await supabase.from("usage_events").insert({ tipo_evento: "vip_cancelado", user_id: userId, metadata: { motivo: status } }); } catch {} })();
 
       // E-mail de cancelamento
       if (perfil) {

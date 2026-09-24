@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CalendarClock, Trophy } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
 import { PaywallCard } from "@/components/paywall-card";
+import { AnaliseTracker } from "@/components/analise-tracker";
 import { getAnaliseBySlug, getCurrentUser, getProdutoVip, getUserState } from "@/lib/queries";
 
 interface PageProps {
@@ -51,6 +52,7 @@ export default async function AnalisePage({ params }: PageProps) {
 
   return (
     <main className="container-content py-6 space-y-4">
+      <AnaliseTracker slug={slug} userId={user?.id} />
       {/* Cabeçalho */}
       <header className="space-y-3">
         <div className="flex items-center gap-2 text-label-sm text-text-muted">

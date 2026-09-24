@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Copy, Share2, AlertTriangle, Clock, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   type VolanteItem,
 } from "@/lib/loteca-engine";
 import type { ConcursoVigente, JogoConcurso } from "@/types/concurso";
+import { registrarEvento } from "@/lib/analytics";
 
 const NOMES_COLUNA = { coluna1: "1", colunaX: "X", coluna2: "2" } as const;
 type ColunaKey = keyof typeof NOMES_COLUNA;
@@ -83,9 +84,19 @@ export function SimuladorClient({ configuracaoInicial, concurso }: SimuladorClie
   const [jogos, setJogos] = useState<VolanteItem[]>(jogosIniciais);
   const resultado = calcularVolante(jogos);
 
+  const simuladorTracked = useRef(false);
+
   const toggleColuna = useCallback((jogoNumero: number, coluna: ColunaKey) => {
     setJogos((prev) => prev.map((j) => j.jogoNumero === jogoNumero ? { ...j, [coluna]: !j[coluna] } : j));
-  }, []);
+    // Dispara uma vez por sessão de simulador
+    if (!simuladorTracked.current) {
+      simuladorTracked.current = true;
+      registrarEvento({
+        tipo_evento: "simulador_usado",
+        metadata: concurso?.numero ? { concurso: concurso.numero } : undefined,
+      });
+    }
+  }, [concurso]);
 
   const limpar = useCallback(() => { setJogos((prev) => volanteVazio(prev.length)); }, []);
 

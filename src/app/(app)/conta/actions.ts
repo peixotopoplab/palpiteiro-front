@@ -40,6 +40,15 @@ export async function aplicarCupom(
     duracao_meses?: number;
   };
 
+  // Evento de analytics para cupom usado com sucesso
+  if (resultado.status === "valido") {
+void supabase.from("usage_events").insert({
+      tipo_evento: "cupom_usado",
+      user_id: (await supabase.auth.getUser()).data.user?.id ?? null,
+      metadata: { codigo },
+    });
+  }
+
   if (resultado.status !== "valido") {
     return { error: resultado.mensagem ?? "Cupom inválido.", success: null };
   }
