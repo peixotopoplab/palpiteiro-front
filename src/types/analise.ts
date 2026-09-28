@@ -28,13 +28,13 @@ export interface Jogo {
   h2h_6_jogos?: string;
   desfalques_mandante: string[];
   desfalques_visitante: string[];
-  odds?: { "1": number; X: number; "2": number };
+  // odds removido — não existe por jogo no schema real (só probabilidades)
   probabilidades: { p1: number; pX: number; p2: number };
   p_base?: number;
   p_final?: number;
   coluna_recomendada: Coluna;
   coluna_segura?: Coluna;
-  zebra_alerta: boolean;
+  /** zebra_alerta removido — sinal real: modificadores_ativos inclui "R01" ou similar */
   modificadores_ativos?: string[];
   justificativa_curta: string;
   justificativa_completa?: string;
@@ -44,16 +44,15 @@ export interface DuploAutomatico {
   jogo: number;
   times: string;
   opcoes: string[];
-  cobertura_pct: number;
-  score: number;
   motivo: string;
+  // cobertura_pct e score removidos — não existem no schema real da skill
 }
 
 export interface VolanteRecomendado {
   colunas: Coluna[];
-  probabilidade_acumulada: number;
   custo_estimado_duplos: number;
   custo_estimado_triplos: number;
+  // probabilidade_acumulada removido — não existe no schema real da skill
 }
 
 export interface CalculoAposta {
@@ -110,6 +109,26 @@ export interface AnaliseResultados {
 }
 
 export type Analise = AnaliseJogos | AnaliseResultados;
+
+/**
+ * Formata data_jogos para exibição.
+ * Trata intervalos ("2026-09-26/27") e datas simples ("2026-09-26").
+ * new Date("2026-09-26/27") retorna Invalid Date — esta função é segura.
+ */
+export function formatarDataJogos(data_jogos: string): string {
+  try {
+    // Intervalo: "2026-09-26/27" — usa apenas a primeira data
+    const dataPrincipal = data_jogos.includes("/")
+      ? data_jogos.split("/")[0]
+      : data_jogos;
+    // Adiciona horário para evitar off-by-one de fuso
+    return new Date(dataPrincipal + "T12:00:00").toLocaleDateString("pt-BR", {
+      weekday: "long", day: "2-digit", month: "long",
+    });
+  } catch {
+    return data_jogos; // fallback: exibe o string original
+  }
+}
 
 /** Deriva o tipo de badge (seco/duplo/triplo) a partir da coluna recomendada. */
 export function tipoColuna(coluna: Coluna): "seco" | "duplo" | "triplo" {

@@ -5,6 +5,7 @@ import { CalendarClock, Trophy } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
 import { PaywallCard } from "@/components/paywall-card";
 import { AnaliseTracker } from "@/components/analise-tracker";
+import { formatarDataJogos } from "@/types/analise";
 import { getAnaliseBySlug, getCurrentUser, getProdutoVip, getUserState } from "@/lib/queries";
 
 interface PageProps {
@@ -57,9 +58,7 @@ export default async function AnalisePage({ params }: PageProps) {
       <header className="space-y-3">
         <div className="flex items-center gap-2 text-label-sm text-text-muted">
           <CalendarClock className="size-3.5" />
-          {new Date(dados.data_jogos).toLocaleDateString("pt-BR", {
-            weekday: "short", day: "2-digit", month: "short",
-          })}
+          {formatarDataJogos(dados.data_jogos)}
         </div>
         <h1 className="text-headline-lg text-text-primary">{analise.titulo}</h1>
 

@@ -27,7 +27,7 @@ function MatchCardLiberado({ jogo }: { jogo: Jogo }) {
             {String(jogo.numero).padStart(2, "0")} · {jogo.competicao}
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
-            {jogo.zebra_alerta && (
+            {jogo.modificadores_ativos?.some((m) => m.startsWith("R0")) && (
               <span className="inline-flex items-center gap-1 text-label-sm text-error-red">
                 <TriangleAlert className="size-3" /> Zebra
               </span>
