@@ -4,6 +4,7 @@ import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { AuthModalProvider } from "@/components/auth-modal-provider";
 import { JogoDrawerProvider } from "@/components/jogo-drawer-provider";
 import { JogosDoDiaDrawerProvider } from "@/components/jogos-do-dia-drawer-provider";
+import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { getCurrentUser } from "@/lib/queries";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <JogoDrawerProvider>
       <JogosDoDiaDrawerProvider>
         <div className="min-h-full flex flex-col">
+        <ServiceWorkerRegistrar />
         <TopBar userStatus={user?.status ?? null} />
         <div className="flex-1">{children}</div>
 

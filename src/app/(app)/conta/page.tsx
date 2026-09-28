@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { CupomForm } from "./cupom-form";
 import { BotaoCheckout } from "./botao-checkout";
+import { PushNotificationButton } from "@/components/push-notification-button";
 import { getProdutoVip } from "@/lib/queries";
 import { BotaoSair } from "./botao-sair";
 
@@ -197,17 +198,15 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
             <div className="size-4 rounded-full bg-white" />
           </div>
         </div>
-        <div className="flex items-center justify-between px-4 py-3 opacity-60">
+        <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <Bell className="size-4 text-text-muted shrink-0" />
             <div>
-              <p className="text-body-md text-text-primary">Alertas de Zebras</p>
-              <p className="text-label-sm text-text-muted">Aviso de jogos com EV+ alto</p>
+              <p className="text-body-md text-text-primary">Notificações Push</p>
+              <p className="text-label-sm text-text-muted">Alertas de nova análise publicada</p>
             </div>
           </div>
-          <div className="w-10 h-6 rounded-full bg-surface-container-high flex items-center px-1">
-            <div className="size-4 rounded-full bg-text-muted" />
-          </div>
+          <PushNotificationButton />
         </div>
       </section>
 
