@@ -65,7 +65,13 @@ export function PushNotificationButton({ className }: { className?: string }) {
 
   const registrarSW = useCallback(async () => {
     const reg = await navigator.serviceWorker.register("/sw.js");
-    await navigator.serviceWorker.ready;
+    // Aguarda SW com timeout de 5s para não travar indefinidamente
+    await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("SW timeout")), 5000)
+      ),
+    ]);
     return reg;
   }, []);
 
@@ -73,39 +79,39 @@ export function PushNotificationButton({ className }: { className?: string }) {
     setCarregando(true);
     try {
       const permission = await Notification.requestPermission();
-      if (permission !== "granted") {
-        setEstado("denied");
-        return;
-      }
+      if (permission === "denied") { setEstado("denied"); return; }
+      if (permission !== "granted") { setEstado("unsubscribed"); return; }
+
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) { console.error("[push] NEXT_PUBLIC_VAPID_PUBLIC_KEY não configurada"); return; }
 
       const reg = await registrarSW();
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidKey) throw new Error("VAPID_PUBLIC_KEY não configurada");
-
+      // Cast para any para contornar incompatibilidade de tipos ArrayBuffer/SharedArrayBuffer no TS
+      const applicationServerKey = urlBase64ToUint8Array(vapidKey);
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as BufferSource,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        applicationServerKey: applicationServerKey as any,
       });
 
       const sub = subscription.toJSON();
-      const token = await getAuthToken();
+      if (!sub.endpoint || !sub.keys) throw new Error("Subscription inválida");
 
-      await fetch("/api/push/subscribe", {
+      const token = await getAuthToken();
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          endpoint: sub.endpoint,
-          keys: sub.keys,
-          userAgent: navigator.userAgent,
-        }),
+        body: JSON.stringify({ endpoint: sub.endpoint, keys: sub.keys, userAgent: navigator.userAgent }),
       });
 
+      if (!res.ok) throw new Error(`API erro: ${res.status}`);
       setEstado("subscribed");
     } catch (err) {
       console.error("[push] erro ao ativar:", err);
+      setEstado("unsubscribed"); // volta ao estado inicial em caso de erro
     } finally {
       setCarregando(false);
     }
