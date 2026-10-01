@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, ClipboardList, Trophy, BookOpen, HelpCircle } from "lucide-react";
+import { ChevronRight, ClipboardList, Trophy } from "lucide-react";
 import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
 import { HomeCTAVip } from "@/components/home-cta-vip";
 import { EmConstrucaoPopup } from "@/components/em-construcao-popup";
@@ -58,27 +58,16 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* Ações rápidas */}
-      <section className="grid grid-cols-2 gap-2">
+            {/* Ações rápidas */}
+      <section className="grid grid-cols-1 gap-2">
         <Link href="/simulador">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <ClipboardList className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Simulador</p>
-            <p className="text-label-sm text-text-muted">Monte seu volante</p>
-          </div>
-        </Link>
-        <Link href="/glossario">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <BookOpen className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Glossário</p>
-            <p className="text-label-sm text-text-muted">Entenda o modelo</p>
-          </div>
-        </Link>
-        <Link href="/contato">
-          <div className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-1 hover:bg-surface-hover transition-colors">
-            <HelpCircle className="size-5 text-primary" />
-            <p className="text-title-sm text-text-primary">Suporte</p>
-            <p className="text-label-sm text-text-muted">Dúvidas e contato</p>
+          <div className="flex items-center gap-3 rounded-md border border-border-subtle bg-surface-dark px-4 py-3 hover:bg-surface-hover transition-colors">
+            <ClipboardList className="size-5 text-primary shrink-0" />
+            <div>
+              <p className="text-title-sm text-text-primary">Simulador de Volante</p>
+              <p className="text-label-sm text-text-muted">Monte e calcule o custo do seu volante</p>
+            </div>
+            <ChevronRight className="size-4 text-text-muted ml-auto shrink-0" />
           </div>
         </Link>
       </section>

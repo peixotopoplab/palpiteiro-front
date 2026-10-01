@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ExcluirContaButton } from "./excluir-conta-button";
 import { redirect } from "next/navigation";
 import {
   CheckCircle2, CreditCard, Mail, Bell,
@@ -228,7 +229,31 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
         ))}
       </section>
 
+      {/* Cancelamento VIP */}
+      {isVip && (
+        <section className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-2">
+          <p className="text-label-sm text-text-muted uppercase">Cancelamento</p>
+          <p className="text-body-md text-text-muted">
+            Para cancelar sua assinatura VIP, acesse o painel do Mercado Pago.
+            Seu acesso permanece ativo até o fim do período já pago.
+          </p>
+          <a
+            href="https://www.mercadopago.com.br/subscriptions"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block text-body-md text-primary underline underline-offset-2 hover:text-text-primary transition-colors"
+          >
+            Gerenciar assinatura →
+          </a>
+        </section>
+      )}
+
       <BotaoSair />
+
+      {/* Excluir conta — discreto no rodapé */}
+      <div className="text-center pb-2">
+        <ExcluirContaButton />
+      </div>
     </main>
   );
 }
