@@ -40,22 +40,13 @@ export function HomeCTAVip({ userState, precoMensal }: HomeCTAVipProps) {
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        onClick={() => abrirAssinatura({
-          contexto: "Desbloqueie a análise completa dos 14 jogos com probabilidades e alertas de zebra.",
-          userState,
-          precoMensal,
-        })}
-        className="w-full rounded-md bg-badge-vip text-surface-container-lowest font-bold text-title-sm py-3 hover:bg-[#c59f2d] transition-colors"
+      <a
+        href="/assinar"
+        className="block w-full text-center rounded-md bg-badge-vip text-surface-container-lowest font-bold text-title-sm py-3 hover:bg-[#c59f2d] transition-colors"
         style={{ boxShadow: "0 0 16px rgba(212,175,55,0.18)" }}
       >
-        {userState === "guest"
-          ? "Criar conta e assinar VIP"
-          : preco
-          ? `Assinar VIP — ${preco}/mês`
-          : "Assinar VIP Agora"}
-      </button>
+        {preco ? `Ver planos — ${preco}/mês` : "Ver planos VIP"}
+      </a>
     </div>
   );
 }
