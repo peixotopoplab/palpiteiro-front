@@ -166,3 +166,45 @@ export const getAnalisesHistorico = cache(async (limite = 10) => {
     .limit(limite);
   return data ?? [];
 });
+
+// ================================================================
+// Likes de análise
+// ================================================================
+
+export interface LikesAnalise {
+  totalLikes: number;
+  totalDislikes: number;
+  meuVoto: "like" | "dislike" | null;
+}
+
+export const getLikesAnalise = cache(async (
+  analysisId: string,
+  userId: string | null
+): Promise<LikesAnalise> => {
+  const supabase = await createClient();
+
+  // Busca contadores da view
+  const { data: contagem } = await supabase
+    .from("analise_likes_contagem")
+    .select("total_likes, total_dislikes")
+    .eq("analysis_id", analysisId)
+    .maybeSingle();
+
+  // Busca voto do usuário logado
+  let meuVoto: "like" | "dislike" | null = null;
+  if (userId) {
+    const { data: voto } = await supabase
+      .from("analise_likes")
+      .select("tipo")
+      .eq("analysis_id", analysisId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    meuVoto = (voto?.tipo as "like" | "dislike") ?? null;
+  }
+
+  return {
+    totalLikes: Number(contagem?.total_likes ?? 0),
+    totalDislikes: Number(contagem?.total_dislikes ?? 0),
+    meuVoto,
+  };
+});

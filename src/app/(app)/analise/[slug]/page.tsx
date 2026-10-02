@@ -5,8 +5,9 @@ import { CalendarClock, Trophy } from "lucide-react";
 import { MatchCard } from "@/components/match-card";
 import { PaywallCard } from "@/components/paywall-card";
 import { AnaliseTracker } from "@/components/analise-tracker";
+import { AnaliseLikes } from "@/components/analise-likes";
 import { formatarDataJogos } from "@/types/analise";
-import { getAnaliseBySlug, getCurrentUser, getProdutoVip, getUserState } from "@/lib/queries";
+import { getAnaliseBySlug, getCurrentUser, getProdutoVip, getUserState, getLikesAnalise } from "@/lib/queries";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,8 +35,8 @@ export default async function AnalisePage({ params }: PageProps) {
   ]);
   const userState = getUserState(user);
   const analise = await getAnaliseBySlug(slug, user?.status ?? null);
-
   if (!analise) notFound();
+  const likes = await getLikesAnalise(analise.id, user?.id ?? null);
 
   const { dados, totalJogos } = analise;
 
@@ -113,6 +114,17 @@ export default async function AnalisePage({ params }: PageProps) {
             ))}
         </div>
       )}
+
+      {/* Like / Dislike — abaixo das análises, lateral direita */}
+      <div className="flex justify-end px-1">
+        <AnaliseLikes
+          analysisId={analise.id}
+          totalLikes={likes.totalLikes}
+          totalDislikes={likes.totalDislikes}
+          meuVoto={likes.meuVoto}
+          usuarioLogado={!!user}
+        />
+      </div>
 
       {/* Link discreto pro glossário */}
       <p className="text-center pb-2">
