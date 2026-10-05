@@ -68,11 +68,11 @@ function JogoDrawer({ jogo, onClose }: { jogo: Jogo; onClose: () => void }) {
         )}
 
         {/* Desfalques */}
-        {(jogo.desfalques_mandante.length > 0 || jogo.desfalques_visitante.length > 0) && (
+        {((jogo.desfalques_mandante?.length ?? 0) > 0 || (jogo.desfalques_visitante?.length ?? 0) > 0) && (
           <div className="space-y-1">
             <p className="text-label-sm text-text-muted uppercase">Desfalques</p>
             <p className="text-body-md text-secondary">
-              {[...jogo.desfalques_mandante, ...jogo.desfalques_visitante].join(" · ")}
+              {[...(jogo.desfalques_mandante ?? []), ...(jogo.desfalques_visitante ?? [])].join(" · ")}
             </p>
           </div>
         )}
