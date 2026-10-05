@@ -19,10 +19,10 @@ export function useJogoDrawer() {
 function JogoDrawer({ jogo, onClose }: { jogo: Jogo; onClose: () => void }) {
   return (
     <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-surface-container-lowest/80 backdrop-blur-sm"
+      className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-surface-container-lowest/80 backdrop-blur-sm p-0 sm:p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg bg-surface-dark border-t border-border-subtle rounded-t-xl p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+      <div className="w-full max-w-lg bg-surface-dark border border-border-subtle rounded-t-xl sm:rounded-xl p-5 space-y-4 max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <span className="text-label-sm text-text-muted uppercase">
             {String(jogo.numero).padStart(2, "0")} · {jogo.competicao}
