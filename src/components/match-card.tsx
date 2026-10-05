@@ -1,6 +1,7 @@
 "use client";
 
 import { useJogoDrawer } from "@/components/jogo-drawer-provider";
+import { JogoLikes } from "@/components/analise-likes";
 import { ChevronRight, Lock, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import type { Jogo } from "@/types/analise";
 /* ------------------------------------------------------------------ */
 /* Card de jogo desbloqueado                                           */
 /* ------------------------------------------------------------------ */
-function MatchCardLiberado({ jogo }: { jogo: Jogo }) {
+function MatchCardLiberado({ jogo, analysisId, usuarioLogado }: { jogo: Jogo; analysisId: string; usuarioLogado: boolean }) {
   const { abrirDrawer } = useJogoDrawer();
   const tipoBadge = tipoColuna(jogo.coluna_recomendada);
 
@@ -79,16 +80,28 @@ function MatchCardLiberado({ jogo }: { jogo: Jogo }) {
           })}
         </div>
 
-        {/* Resumo + link análise */}
-        <button
-          onClick={() => abrirDrawer(jogo)}
-          className="w-full flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border-subtle text-left hover:bg-surface-hover transition-colors"
-        >
-          <p className="text-body-md text-text-muted line-clamp-1 flex-1">
-            {jogo.justificativa_curta}
-          </p>
-          <ChevronRight className="size-4 text-text-muted shrink-0" />
-        </button>
+        {/* Resumo + likes + link análise */}
+        <div className="flex items-center border-t border-border-subtle">
+          <button
+            onClick={() => abrirDrawer(jogo)}
+            className="flex items-center gap-2 px-3 py-2.5 text-left hover:bg-surface-hover transition-colors flex-1 min-w-0"
+          >
+            <p className="text-body-md text-text-muted line-clamp-1 flex-1">
+              {jogo.justificativa_curta}
+            </p>
+            <ChevronRight className="size-4 text-text-muted shrink-0" />
+          </button>
+          <div className="px-3 py-2.5 border-l border-border-subtle shrink-0">
+            <JogoLikes
+              analysisId={analysisId}
+              jogoNumero={jogo.numero}
+              initialLikes={0}
+              initialDislikes={0}
+              initialVoto={null}
+              usuarioLogado={usuarioLogado}
+            />
+          </div>
+        </div>
       </article>
 
     </>
@@ -129,9 +142,9 @@ function MatchCardBloqueado({ jogo }: { jogo: { numero: number; mandante: string
 /* ------------------------------------------------------------------ */
 /* Componente principal — despacha pro tipo certo                      */
 /* ------------------------------------------------------------------ */
-export function MatchCard({ jogo }: { jogo: JogoExibicao }) {
+export function MatchCard({ jogo, analysisId = "", usuarioLogado = false }: { jogo: JogoExibicao; analysisId?: string; usuarioLogado?: boolean }) {
   if ("bloqueado" in jogo && jogo.bloqueado) {
     return <MatchCardBloqueado jogo={jogo} />;
   }
-  return <MatchCardLiberado jogo={jogo as Jogo} />;
+  return <MatchCardLiberado jogo={jogo as Jogo} analysisId={analysisId} usuarioLogado={usuarioLogado} />;
 }

@@ -1,6 +1,21 @@
 // Service Worker — Palpiteiro PWA
-// Versão mínima: só gerencia push e notificationclick.
-// NÃO intercepta fetch — evita quebrar navegação e carregamento de páginas.
+// v3 — sem interceptação de fetch (corrige drawer "This page couldn't load")
+
+const SW_VERSION = "3";
+
+// Força atualização imediata — substitui SW antigo sem esperar fechar abas
+self.addEventListener("install", () => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    // Limpa caches antigos que possam ter sido criados por versões anteriores
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((key) => caches.delete(key)))
+    ).then(() => self.clients.claim())
+  );
+});
 
 self.addEventListener("push", (event) => {
   if (!event.data) return;
@@ -23,7 +38,6 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = event.notification.data?.url ?? "/";
 
-  // Grava evento push_clicado no Supabase via REST (SW não tem acesso ao SDK)
   if (self.__SUPABASE_URL__ && self.__SUPABASE_ANON_KEY__) {
     fetch(`${self.__SUPABASE_URL__}/rest/v1/usage_events`, {
       method: "POST",
@@ -47,7 +61,6 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// Recebe config do Front (SUPABASE_URL e SUPABASE_ANON_KEY)
 self.addEventListener("message", (event) => {
   if (event.data?.type === "INIT_CONFIG") {
     self.__SUPABASE_URL__ = event.data.supabaseUrl;
@@ -55,5 +68,6 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// IMPORTANTE: sem evento "fetch" — o SW não intercepta nenhuma requisição.
-// Isso evita quebrar navegação, carregamento de páginas e o drawer da análise.
+// SEM evento "fetch" — o SW não intercepta nenhuma requisição HTTP.
+// Isso é intencional: evita interferir com navegação e carregamento de páginas.
+console.log("[SW] Palpiteiro Service Worker v" + SW_VERSION + " ativo");
