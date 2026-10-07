@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /conta
+Disallow: /entrar
+Disallow: /api/
 
-Sitemap: https://palpiteiro.app/sitemap.xml
+Sitemap: https://palpiteiro-front.vercel.app/sitemap.xml

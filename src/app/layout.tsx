@@ -9,6 +9,21 @@ export const metadata: Metadata = {
   },
   description:
     "Análises estatísticas da Loteca com IA e dados históricos. Probabilidades por jogo, secas, duplos e triplos recomendados.",
+  metadataBase: new URL("https://palpiteiro-front.vercel.app"),
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Palpiteiro",
+    title: "Palpiteiro — Análises da Loteca",
+    description: "Análises estatísticas da Loteca com IA e dados históricos. Probabilidades por jogo, secas, duplos e triplos recomendados.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Palpiteiro — Análises da Loteca" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Palpiteiro — Análises da Loteca",
+    description: "Análises estatísticas da Loteca com IA e dados históricos.",
+    images: ["/og-image.png"],
+  },
   manifest: "/manifest.json",
   icons: {
     // favicon.ico é servido automaticamente via convenção do App Router

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, ClipboardList, Trophy } from "lucide-react";
 import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
 import { HomeCTAVip } from "@/components/home-cta-vip";
 import { EmConstrucaoPopup } from "@/components/em-construcao-popup";
+
+export const metadata: Metadata = {
+  title: "Palpiteiro — Análises da Loteca",
+  description: "Análises estatísticas da Loteca com probabilidades por jogo, secas, duplos e triplos recomendados. Acesse grátis.",
+};
 
 export default async function HomePage() {
   const [user, analises, produtoVip] = await Promise.all([

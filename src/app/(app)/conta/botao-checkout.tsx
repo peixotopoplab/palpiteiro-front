@@ -27,7 +27,13 @@ export function BotaoCheckout({ precoMensal }: BotaoCheckoutProps) {
         return;
       }
       if (result.checkoutUrl) {
-        window.location.href = result.checkoutUrl;
+        // Abre em nova aba no desktop; mobile redireciona na mesma aba
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          window.location.href = result.checkoutUrl;
+        } else {
+          window.open(result.checkoutUrl, "_blank", "noopener,noreferrer");
+        }
       }
     } catch {
       setErro("Erro inesperado. Tente novamente.");
