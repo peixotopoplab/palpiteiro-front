@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ExcluirContaButton } from "./excluir-conta-button";
+import { PagamentoRetorno } from "./pagamento-retorno";
 import { redirect } from "next/navigation";
 import {
   CheckCircle2, CreditCard, Mail, Bell,
@@ -59,23 +60,8 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
 
   return (
     <main className="container-content py-6 space-y-4 max-w-lg">
-      {pagamento === "sucesso" && (
-        <div className="rounded-md border border-tertiary/40 bg-tertiary/10 px-4 py-3">
-          <p className="text-title-sm text-tertiary">✓ Pagamento confirmado!</p>
-          <p className="text-body-md text-text-muted">Seu plano VIP foi ativado. Aproveite o acesso completo.</p>
-        </div>
-      )}
-      {pagamento === "falha" && (
-        <div className="rounded-md border border-error-red/40 bg-error-red/10 px-4 py-3">
-          <p className="text-title-sm text-error-red">Pagamento não concluído</p>
-          <p className="text-body-md text-text-muted">Tente novamente ou entre em contato com o suporte.</p>
-        </div>
-      )}
-      {pagamento === "pendente" && (
-        <div className="rounded-md border border-secondary/40 bg-secondary/10 px-4 py-3">
-          <p className="text-title-sm text-secondary">Pagamento em processamento</p>
-          <p className="text-body-md text-text-muted">Assim que confirmado, seu VIP será ativado automaticamente.</p>
-        </div>
+      {pagamento && (
+        <PagamentoRetorno status={pagamento as "sucesso" | "falha" | "pendente"} />
       )}
       {/* Perfil */}
       <section className="rounded-md border border-border-subtle bg-surface-dark p-4 space-y-3">

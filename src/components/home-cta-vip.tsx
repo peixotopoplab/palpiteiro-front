@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthModal } from "@/components/auth-modal-provider";
+import { BotaoCheckout } from "@/app/(app)/conta/botao-checkout";
 import type { UserState } from "@/types/concurso";
 
 interface HomeCTAVipProps {
@@ -40,13 +41,17 @@ export function HomeCTAVip({ userState, precoMensal }: HomeCTAVipProps) {
           </li>
         ))}
       </ul>
-      <a
-        href="/assinar"
-        className="block w-full text-center rounded-md bg-badge-vip text-surface-container-lowest font-bold text-title-sm py-3 hover:bg-[#c59f2d] transition-colors"
-        style={{ boxShadow: "0 0 16px rgba(212,175,55,0.18)" }}
-      >
-        {preco ? `Ver planos — ${preco}/mês` : "Ver planos VIP"}
-      </a>
+      {userState === "free" ? (
+        <BotaoCheckout precoMensal={precoMensal} />
+      ) : (
+        <a
+          href="/assinar"
+          className="block w-full text-center rounded-md bg-badge-vip text-surface-container-lowest font-bold text-title-sm py-3 hover:bg-[#c59f2d] transition-colors"
+          style={{ boxShadow: "0 0 16px rgba(212,175,55,0.18)" }}
+        >
+          Criar conta e assinar VIP
+        </a>
+      )}
     </div>
   );
 }

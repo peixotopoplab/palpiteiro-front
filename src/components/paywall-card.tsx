@@ -3,6 +3,7 @@
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from "@/components/auth-modal-provider";
+import { BotaoCheckout } from "@/app/(app)/conta/botao-checkout";
 import type { UserState } from "@/types/concurso";
 
 interface PaywallCardProps {
@@ -47,26 +48,28 @@ export function PaywallCard({ jogosRestantes, userState, precoMensal }: PaywallC
         Boletim enviado por e-mail antes do fechamento.
       </p>
 
-      <Button
-        variant="gold"
-        className="w-full"
-        onClick={() => abrirAssinatura({ contexto, userState, precoMensal })}
-      >
-        {labelBotao}
-      </Button>
-
-      {/* "Já tem conta?" só faz sentido para guest */}
-      {userState === "guest" && (
-        <p className="text-label-sm text-text-muted">
-          Já tem conta?{" "}
-          <button
-            type="button"
-            className="text-primary underline underline-offset-2"
-            onClick={() => abrirAssinatura({ contexto, userState: "guest", precoMensal })}
+      {userState === "free" ? (
+        <BotaoCheckout precoMensal={precoMensal} />
+      ) : (
+        <>
+          <Button
+            variant="gold"
+            className="w-full"
+            onClick={() => abrirAssinatura({ contexto, userState, precoMensal })}
           >
-            Entrar
-          </button>
-        </p>
+            {labelBotao}
+          </Button>
+          <p className="text-label-sm text-text-muted">
+            Já tem conta?{" "}
+            <button
+              type="button"
+              className="text-primary underline underline-offset-2"
+              onClick={() => abrirAssinatura({ contexto, userState: "guest", precoMensal })}
+            >
+              Entrar
+            </button>
+          </p>
+        </>
       )}
     </div>
   );
