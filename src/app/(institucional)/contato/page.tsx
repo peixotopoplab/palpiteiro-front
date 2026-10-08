@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContatoForm } from "./contato-form";
 
 export const metadata: Metadata = {
   title: "Contato",
@@ -55,6 +56,11 @@ export default function ContatoPage() {
         Tempo de resposta: até 5 dias úteis para solicitações gerais; até 2 dias úteis
         para problemas de acesso VIP.
       </p>
+      {/* Formulário de contato */}
+      <div className="border-t border-border-subtle pt-6">
+        <h2 className="text-title-sm text-text-primary mb-4">Enviar mensagem</h2>
+        <ContatoForm />
+      </div>
     </article>
   );
 }
