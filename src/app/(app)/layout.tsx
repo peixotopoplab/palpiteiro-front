@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { TopBar } from "@/components/app-shell/topbar";
 import { BottomNav } from "@/components/app-shell/bottom-nav";
 import { AuthModalProvider } from "@/components/auth-modal-provider";
-import { JogoDrawerProvider } from "@/components/jogo-drawer-provider";
 import { ServiceWorkerRegistrar } from "@/components/service-worker-registrar";
 import { getCurrentUser } from "@/lib/queries";
 
@@ -12,7 +11,6 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <AuthModalProvider>
-      <JogoDrawerProvider>
         <div className="min-h-full flex flex-col">
           <Suspense fallback={null}>
             <ServiceWorkerRegistrar />
@@ -47,7 +45,6 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
           <BottomNav />
         </div>
-      </JogoDrawerProvider>
     </AuthModalProvider>
   );
 }

@@ -1,97 +1,188 @@
 "use client";
 
-import { useJogoDrawer } from "@/components/jogo-drawer-provider";
-import { JogoLikes } from "@/components/analise-likes";
-import { ChevronRight, Lock, TriangleAlert } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ChevronDown, ChevronUp, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import type { JogoExibicao } from "@/lib/queries";
-import { tipoColuna, colunaSelecionada } from "@/types/analise";
-import type { Jogo } from "@/types/analise";
+import { colunaSelecionada, tipoColuna } from "@/types/analise";
+import type { Jogo, JogoExibicao } from "@/types/analise";
+import { JogoLikes } from "@/components/analise-likes";
 
-/* ------------------------------------------------------------------ */
-/* Drawer de análise completa (abre na mesma tela)                     */
-/* ------------------------------------------------------------------ */
-/* ------------------------------------------------------------------ */
-/* Card de jogo desbloqueado                                           */
-/* ------------------------------------------------------------------ */
-function MatchCardLiberado({ jogo, analysisId, usuarioLogado }: { jogo: Jogo; analysisId: string; usuarioLogado: boolean }) {
-  const { abrirDrawer } = useJogoDrawer();
-  const tipoBadge = tipoColuna(jogo.coluna_recomendada);
+// ----------------------------------------------------------------
+// Paleta de colunas (nova — azul/cinza/verde)
+// ----------------------------------------------------------------
+function ColBadge({ coluna, recomendada }: { coluna: "1" | "X" | "2"; recomendada: boolean }) {
+  const styles = {
+    "1": recomendada
+      ? "bg-blue-900/40 text-blue-300 border-blue-700/50"
+      : "bg-surface-container text-text-muted border-border-subtle",
+    "X": recomendada
+      ? "bg-surface-container-high text-text-primary border-outline"
+      : "bg-surface-container text-text-muted border-border-subtle",
+    "2": recomendada
+      ? "bg-primary-container/40 text-tertiary border-primary-container/50"
+      : "bg-surface-container text-text-muted border-border-subtle",
+  };
+  return (
+    <span className={cn("text-label-sm font-bold px-2.5 py-1 rounded-md border", styles[coluna])}>
+      Col {coluna}
+    </span>
+  );
+}
+
+// ----------------------------------------------------------------
+// Badge de risco
+// ----------------------------------------------------------------
+function RiskBadge({ modificadores }: { modificadores?: string[] }) {
+  const isZebra = modificadores?.some((m) => m.startsWith("R0"));
+  if (!isZebra) return null;
+  return (
+    <span className="inline-flex items-center gap-1 text-label-sm text-error-red bg-error-red/10 border border-error-red/20 px-2 py-0.5 rounded-full">
+      <TriangleAlert className="size-3" /> Zebra
+    </span>
+  );
+}
+
+// ----------------------------------------------------------------
+// Barras de probabilidade
+// ----------------------------------------------------------------
+function ProbBars({ p1, px, p2 }: { p1: number; px: number; p2: number }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 px-3 pb-3">
+      {([["1", p1, "bg-blue-500"], ["X", px, "bg-outline"], ["2", p2, "bg-primary"]] as [string, number, string][]).map(
+        ([col, prob, color]) => (
+          <div key={col}>
+            <div className="flex justify-between text-label-sm text-text-muted mb-1">
+              <span>Col {col}</span>
+              <span>{prob}%</span>
+            </div>
+            <div className="h-1.5 bg-surface-container-lowest rounded-full overflow-hidden">
+              <div
+                className={cn("h-full rounded-full", color)}
+                style={{ width: `${prob}%` }}
+              />
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------
+// Card desbloqueado
+// ----------------------------------------------------------------
+interface MatchCardLiberadoProps {
+  jogo: Jogo;
+  analysisId: string;
+  usuarioLogado: boolean;
+  modoCompacto: boolean;
+  aberto: boolean;
+  onToggle: () => void;
+}
+
+function MatchCardLiberado({
+  jogo, analysisId, usuarioLogado, modoCompacto, aberto, onToggle,
+}: MatchCardLiberadoProps) {
+  const isZebra = jogo.modificadores_ativos?.some((m) => m.startsWith("R0"));
+  const colRec = jogo.coluna_recomendada as "1" | "X" | "2";
 
   return (
-    <>
-      <article className="rounded-md border border-border-subtle bg-surface-dark overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-1 flex-wrap">
-          <span className="text-label-sm text-text-muted uppercase">
-            {String(jogo.numero).padStart(2, "0")} · {jogo.competicao}
+    <div className={cn(
+      "rounded-md border bg-surface-dark transition-colors",
+      aberto ? "border-primary-container/60" : "border-border-subtle"
+    )}>
+      {/* Header do card */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full text-left"
+      >
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          {/* Número */}
+          <span className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-label-sm text-text-muted font-medium shrink-0">
+            {jogo.numero}
           </span>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {jogo.modificadores_ativos?.some((m) => m.startsWith("R0")) && (
-              <span className="inline-flex items-center gap-1 text-label-sm text-error-red">
-                <TriangleAlert className="size-3" /> Zebra
-              </span>
-            )}
-            <Badge variant={tipoBadge} />
-          </div>
-        </div>
 
-        {/* Times */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2">
-          <div>
-            <p className="text-title-sm text-text-primary">{jogo.mandante}</p>
-            {jogo.posicao_mandante && (
-              <p className="text-label-sm text-tertiary">{jogo.posicao_mandante}</p>
-            )}
-          </div>
-          <span className="text-label-sm text-text-muted">vs</span>
-          <div className="text-right">
-            <p className="text-title-sm text-text-primary">{jogo.visitante}</p>
-            {jogo.posicao_visitante && (
-              <p className="text-label-sm text-text-muted">{jogo.posicao_visitante}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Seletor de colunas — minimalista */}
-        <div className="grid grid-cols-3 gap-px bg-border-subtle mx-3 mb-3 rounded-md overflow-hidden">
-          {([
-            ["1", jogo.mandante, jogo.probabilidades.p1],
-            ["X", "Empate", jogo.probabilidades.pX],
-            ["2", jogo.visitante, jogo.probabilidades.p2],
-          ] as [string, string, number][]).map(([col, label, prob]) => {
-            const sel = colunaSelecionada(jogo.coluna_recomendada, col as "1" | "X" | "2");
-            return (
-              <div
-                key={col}
-                className={cn(
-                  "py-2 px-1 text-center",
-                  sel
-                    ? "bg-primary-container text-on-primary-container"
-                    : "bg-surface-container text-text-muted"
-                )}
-              >
-                <p className="text-label-sm uppercase">Col {col}</p>
-                <p className="text-label-sm truncate">{label}</p>
-                <p className="text-title-sm font-bold">{prob}%</p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Resumo + likes + link análise */}
-        <div className="flex items-center border-t border-border-subtle">
-          <button
-            onClick={() => abrirDrawer(jogo)}
-            className="flex items-center gap-2 px-3 py-2.5 text-left hover:bg-surface-hover transition-colors flex-1 min-w-0"
-          >
-            <p className="text-body-md text-text-muted line-clamp-1 flex-1">
-              {jogo.justificativa_curta}
+          {/* Times */}
+          <div className="flex-1 min-w-0">
+            <p className="text-title-sm text-text-primary truncate">
+              {jogo.mandante} <span className="text-text-muted font-normal">×</span> {jogo.visitante}
             </p>
-            <ChevronRight className="size-4 text-text-muted shrink-0" />
-          </button>
-          <div className="px-3 py-2.5 border-l border-border-subtle shrink-0">
+            {!modoCompacto && (
+              <p className="text-label-sm text-text-muted truncate">{jogo.competicao}</p>
+            )}
+          </div>
+
+          {/* Coluna recomendada */}
+          <ColBadge coluna={colRec} recomendada={true} />
+
+          {/* Zebra */}
+          {isZebra && <TriangleAlert className="size-3.5 text-error-red shrink-0" />}
+
+          {/* Toggle */}
+          {aberto
+            ? <ChevronUp className="size-4 text-text-muted shrink-0" />
+            : <ChevronDown className="size-4 text-text-muted shrink-0" />}
+        </div>
+      </button>
+
+      {/* Barras de probabilidade — só no modo detalhado */}
+      {!modoCompacto && (
+        <ProbBars p1={jogo.probabilidades.p1} px={jogo.probabilidades.pX} p2={jogo.probabilidades.p2} />
+      )}
+
+      {/* Insight inline — abre ao clicar, empurra os demais */}
+      {aberto && (
+        <div className="border-t border-border-subtle bg-surface-container-lowest px-3 py-3 space-y-2.5">
+          {/* Probabilidades completas (modo compacto mostra aqui) */}
+          {modoCompacto && (
+            <ProbBars p1={jogo.probabilidades.p1} px={jogo.probabilidades.pX} p2={jogo.probabilidades.p2} />
+          )}
+
+          {/* Todas as colunas com destaque */}
+          <div className="flex gap-2">
+            {(["1", "X", "2"] as const).map((col) => (
+              <ColBadge
+                key={col}
+                coluna={col}
+                recomendada={colunaSelecionada(jogo.coluna_recomendada, col)}
+              />
+            ))}
+            <RiskBadge modificadores={jogo.modificadores_ativos} />
+          </div>
+
+          {/* Análise completa */}
+          {(jogo.justificativa_completa || jogo.justificativa_curta) && (
+            <div>
+              <p className="text-label-sm text-primary uppercase tracking-wide font-semibold mb-1">
+                Análise do modelo
+              </p>
+              <p className="text-body-md text-text-muted leading-relaxed">
+                {jogo.justificativa_completa ?? jogo.justificativa_curta}
+              </p>
+            </div>
+          )}
+
+          {/* H2H */}
+          {jogo.h2h_6_jogos && (
+            <div>
+              <p className="text-label-sm text-text-muted uppercase tracking-wide mb-1">Últimos confrontos</p>
+              <p className="text-body-md text-text-primary">{jogo.h2h_6_jogos}</p>
+            </div>
+          )}
+
+          {/* Desfalques */}
+          {((jogo.desfalques_mandante?.length ?? 0) > 0 || (jogo.desfalques_visitante?.length ?? 0) > 0) && (
+            <div>
+              <p className="text-label-sm text-text-muted uppercase tracking-wide mb-1">Desfalques</p>
+              <p className="text-body-md text-secondary">
+                {[...(jogo.desfalques_mandante ?? []), ...(jogo.desfalques_visitante ?? [])].join(" · ")}
+              </p>
+            </div>
+          )}
+
+          {/* Likes */}
+          <div className="flex justify-end pt-1">
             <JogoLikes
               analysisId={analysisId}
               jogoNumero={jogo.numero}
@@ -102,49 +193,59 @@ function MatchCardLiberado({ jogo, analysisId, usuarioLogado }: { jogo: Jogo; an
             />
           </div>
         </div>
-      </article>
-
-    </>
+      )}
+    </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Card de jogo bloqueado — times visíveis, dados ocultados            */
-/* ------------------------------------------------------------------ */
-function MatchCardBloqueado({ jogo }: { jogo: { numero: number; mandante: string; visitante: string; competicao: string } }) {
+// ----------------------------------------------------------------
+// Card bloqueado
+// ----------------------------------------------------------------
+function MatchCardBloqueado({ jogo }: { jogo: { numero: number; mandante: string; visitante: string } }) {
   return (
-    <article className="rounded-md border border-border-subtle bg-surface-dark opacity-70">
-      <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-1">
-        <span className="text-label-sm text-text-muted uppercase">
-          {String(jogo.numero).padStart(2, "0")} · {jogo.competicao}
-        </span>
-        <Lock className="size-3.5 text-badge-vip" />
+    <div className="rounded-md border border-border-subtle bg-surface-dark opacity-50 px-3 py-2.5 flex items-center gap-2">
+      <span className="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-label-sm text-text-muted font-medium shrink-0">
+        {jogo.numero}
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="h-3.5 w-40 rounded bg-surface-container-high mb-1" />
+        <div className="h-2.5 w-24 rounded bg-surface-container" />
       </div>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2">
-        <p className="text-title-sm text-text-primary">{jogo.mandante}</p>
-        <span className="text-label-sm text-text-muted">vs</span>
-        <p className="text-title-sm text-text-primary text-right">{jogo.visitante}</p>
-      </div>
-      {/* Dados ocultos — blur simulado com barras */}
-      <div className="grid grid-cols-3 gap-px bg-border-subtle mx-3 mb-3 rounded-md overflow-hidden">
-        {["1", "X", "2"].map((col) => (
-          <div key={col} className="py-2 px-1 text-center bg-surface-container">
-            <p className="text-label-sm uppercase text-text-muted">Col {col}</p>
-            <div className="h-3 rounded bg-surface-container-high mx-auto w-10 mt-1 mb-1" />
-            <div className="h-4 rounded bg-surface-container-high mx-auto w-8" />
-          </div>
-        ))}
-      </div>
-    </article>
+    </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Componente principal — despacha pro tipo certo                      */
-/* ------------------------------------------------------------------ */
-export function MatchCard({ jogo, analysisId = "", usuarioLogado = false }: { jogo: JogoExibicao; analysisId?: string; usuarioLogado?: boolean }) {
+// ----------------------------------------------------------------
+// Export público — recebe estado de abertura do pai
+// ----------------------------------------------------------------
+export interface MatchCardProps {
+  jogo: JogoExibicao;
+  analysisId?: string;
+  usuarioLogado?: boolean;
+  modoCompacto?: boolean;
+  aberto?: boolean;
+  onToggle?: () => void;
+}
+
+export function MatchCard({
+  jogo,
+  analysisId = "",
+  usuarioLogado = false,
+  modoCompacto = false,
+  aberto = false,
+  onToggle = () => {},
+}: MatchCardProps) {
   if ("bloqueado" in jogo && jogo.bloqueado) {
     return <MatchCardBloqueado jogo={jogo} />;
   }
-  return <MatchCardLiberado jogo={jogo as Jogo} analysisId={analysisId} usuarioLogado={usuarioLogado} />;
+  return (
+    <MatchCardLiberado
+      jogo={jogo as Jogo}
+      analysisId={analysisId}
+      usuarioLogado={usuarioLogado}
+      modoCompacto={modoCompacto}
+      aberto={aberto}
+      onToggle={onToggle}
+    />
+  );
 }

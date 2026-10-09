@@ -110,6 +110,12 @@ export interface AnaliseResultados {
 
 export type Analise = AnaliseJogos | AnaliseResultados;
 
+/** Jogo bloqueado para Free — só identidade visível */
+export type JogoBloqueado = Pick<Jogo, "numero" | "mandante" | "visitante" | "competicao"> & { bloqueado: true };
+
+/** União de jogo liberado e bloqueado — usado na grade da análise */
+export type JogoExibicao = Jogo | JogoBloqueado;
+
 /**
  * Formata data_jogos para exibição.
  * Trata intervalos ("2026-09-26/27") e datas simples ("2026-09-26").
