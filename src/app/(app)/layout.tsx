@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <TopBar userStatus={user?.status ?? null} />
           <div className="flex-1">{children}</div>
 
-          <footer className="border-t border-border-subtle bg-surface-dark pb-16 lg:pb-0">
+          <footer className="border-t border-border-subtle bg-surface-dark pb-[72px] lg:pb-0">
             <div className="container-content py-4">
               <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
                 {[
