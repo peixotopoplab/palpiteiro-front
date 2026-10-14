@@ -33,7 +33,7 @@ function ColBadge({ coluna, recomendada }: { coluna: "1" | "X" | "2"; recomendad
 // Badge de risco
 // ----------------------------------------------------------------
 function RiskBadge({ modificadores }: { modificadores?: string[] }) {
-  const isZebra = modificadores?.some((m) => m.startsWith("R0"));
+  const isZebra = modificadores?.some((m) => m === "R01");
   if (!isZebra) return null;
   return (
     <span className="inline-flex items-center gap-1 text-label-sm text-error-red bg-error-red/10 border border-error-red/20 px-2 py-0.5 rounded-full">
@@ -83,7 +83,7 @@ interface MatchCardLiberadoProps {
 function MatchCardLiberado({
   jogo, analysisId, usuarioLogado, modoCompacto, aberto, onToggle,
 }: MatchCardLiberadoProps) {
-  const isZebra = jogo.modificadores_ativos?.some((m) => m.startsWith("R0"));
+  const isZebra = jogo.modificadores_ativos?.some((m) => m === "R01");
   const colRec = jogo.coluna_recomendada as "1" | "X" | "2";
 
   return (

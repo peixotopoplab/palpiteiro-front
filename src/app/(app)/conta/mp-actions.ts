@@ -24,21 +24,34 @@ export async function criarPreferenciaVip(): Promise<PreferenciaResult> {
   if (!user) return { error: "Você precisa estar logado para assinar." };
   if (user.status === "vip") return { error: "Você já é assinante VIP." };
 
-  // Busca preço vigente no banco — nunca hardcoded
+  // Busca PREÇO BASE no banco — filtra por papel='preco_base' para não
+  // confundir com campanhas de desconto que usam a mesma tabela.
+  // ATENÇÃO: valor_desconto em campanhas = tamanho do desconto (ex: 10 = R$10 off)
+  //          valor_desconto em preco_base = preço final cobrado (ex: 29.9 = R$29,90)
+  // Enquanto a coluna 'papel' não existir no banco, o Admin NÃO deve criar
+  // campanhas de desconto em produção — use só o registro de preço base.
   const supabase = await createClient();
   const { data: promo } = await supabase
     .from("promotional_pricing")
     .select("nome, valor_desconto, tipo_desconto")
     .eq("ativo", true)
+    .eq("tipo_desconto", "fixo") // só registros de preço fixo (nunca percentual)
     .order("criado_em", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  // Preço base se não houver promoção ativa
-  // (em produção, sempre deve haver ao menos um registro ativo)
-  const valorFinal = promo?.tipo_desconto === "fixo"
-    ? Number(promo.valor_desconto)
-    : 29.9; // fallback — nunca deve ser atingido se o Admin tiver preço cadastrado
+  if (!promo) {
+    console.error("[criarPreferenciaVip] Nenhum preço base ativo encontrado em promotional_pricing");
+    return { error: "Preço indisponível. Tente novamente em instantes." };
+  }
+
+  const valorFinal = Number(promo.valor_desconto);
+
+  // Validação de segurança — preço nunca pode ser menor que R$ 5,00
+  if (valorFinal < 5) {
+    console.error(`[criarPreferenciaVip] ALERTA: valor_desconto suspeito: R$${valorFinal}. Abortando checkout.`);
+    return { error: "Erro de configuração de preço. Contate o suporte." };
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://palpiteiro.app";
 

@@ -12,7 +12,7 @@ type Filtro = "todos" | "favorito" | "equilibrado" | "zebra";
 type Modo = "detalhado" | "compacto";
 
 function getRisco(jogo: Jogo): "favorito" | "equilibrado" | "zebra" {
-  const isZebra = jogo.modificadores_ativos?.some((m) => m.startsWith("R0"));
+  const isZebra = jogo.modificadores_ativos?.some((m) => m === "R01");
   if (isZebra) return "zebra";
   const max = Math.max(jogo.probabilidades.p1, jogo.probabilidades.pX, jogo.probabilidades.p2);
   if (max >= 50) return "favorito";
