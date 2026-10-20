@@ -118,12 +118,12 @@ export const getAnalises = cache(async (limite = 5) => {
 /** Lê preço/condições do produto VIP diretamente do banco. */
 export const getProdutoVip = cache(async () => {
   const supabase = await createClient();
+  // Filtra por papel='preco_base' (migration 019) — nunca retorna campanhas de desconto
   const { data } = await supabase
     .from("promotional_pricing")
     .select("nome, tipo_desconto, valor_desconto, valido_ate")
     .eq("ativo", true)
-    .order("criado_em", { ascending: false })
-    .limit(1)
+    .eq("papel", "preco_base")
     .maybeSingle();
   return data;
 });
