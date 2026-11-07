@@ -68,6 +68,40 @@ async function validarAssinatura(request: NextRequest): Promise<boolean> {
   return computed === v1;
 }
 
+
+/**
+ * Lança pagamento/estorno em financial_transactions (migration 021).
+ * Idempotente: chave única (mercadopago_payment_id, tipo) — o MP reenvia
+ * notificações e o upsert com ignoreDuplicates impede linha duplicada.
+ * Isolado em try/catch: falha aqui não pode impedir a ativação do VIP.
+ */
+async function registrarLancamento(
+  supabase: ReturnType<typeof getServiceClient>,
+  args: { userId: string; tipo: "pagamento" | "estorno"; valor: number; paymentId: string | number }
+) {
+  try {
+    const periodo = new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+    const { error } = await supabase.from("financial_transactions").upsert(
+      {
+        user_id: args.userId,
+        tipo: args.tipo,
+        valor: args.valor,
+        descricao: `Assinatura VIP — ${periodo}`,
+        origem: "webhook",
+        mercadopago_payment_id: String(args.paymentId),
+      },
+      { onConflict: "mercadopago_payment_id,tipo", ignoreDuplicates: true }
+    );
+    if (error) throw new Error(error.message);
+  } catch (err) {
+    console.error("[webhook][CRITICO-FIN] falha ao gravar extrato", {
+      paymentId: args.paymentId,
+      tipo: args.tipo,
+      erro: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 export async function POST(request: NextRequest) {
   let body: string;
   try {
@@ -142,13 +176,8 @@ export async function POST(request: NextRequest) {
         { onConflict: "mercadopago_subscription_id" }
       );
 
-      // Registra transação financeira
-      await supabase.from("financial_transactions").insert({
-        user_id: userId,
-        tipo: "pagamento",
-        valor,
-        descricao: `Pagamento MP #${paymentId}`,
-      });
+      // Extrato financeiro — idempotente (ver registrarLancamento)
+      await registrarLancamento(supabase, { userId, tipo: "pagamento", valor, paymentId });
 
       console.log(`[webhook] VIP ativado para usuário ${userId}`);
 
@@ -194,6 +223,9 @@ export async function POST(request: NextRequest) {
           .from("users")
           .update({ status: "free" })
           .eq("id", userId);
+
+        // Estorno no extrato. 'cancelled' não movimentou dinheiro → sem lançamento.
+        await registrarLancamento(supabase, { userId, tipo: "estorno", valor, paymentId });
       }
 
       await supabase

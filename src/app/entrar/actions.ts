@@ -59,7 +59,12 @@ export async function signUp(
   const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
-    options: { data: { nome } },
+    // termos_* nos metadados: permite que a trigger handle_new_user() grave o
+    // consentimento mesmo quando a confirmação de e-mail está ligada (sem sessão
+    // ainda, o update/insert abaixo roda como anon e a RLS pode bloqueá-lo).
+    options: {
+      data: { nome, termos_aceitos: true, termos_versao: "v1.0-2026-09" },
+    },
   });
 
   if (error) return { error: traduzErro(error.message) };
