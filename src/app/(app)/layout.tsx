@@ -11,14 +11,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   return (
     <AuthModalProvider>
-        <div className="min-h-full flex flex-col">
+        <div className="flex-1 flex flex-col">
           <Suspense fallback={null}>
             <ServiceWorkerRegistrar />
           </Suspense>
           <TopBar userStatus={user?.status ?? null} />
           <div className="flex-1">{children}</div>
 
-          <footer className="border-t border-border-subtle bg-surface-dark pb-[72px] lg:pb-0">
+          <footer className="mt-auto border-t border-border-subtle bg-surface-dark pb-[72px] lg:pb-0">
             <div className="container-content py-4">
               <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
                 {[
