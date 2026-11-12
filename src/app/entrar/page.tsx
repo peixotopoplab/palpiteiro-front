@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState, useEffect } from "react";
+import { destinoPosLogin } from "@/lib/destino-pos-login";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,7 +18,7 @@ type Modo = "entrar" | "cadastrar";
 function EntrarPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/";
+  const redirectTo = destinoPosLogin(searchParams.get("redirect"));
 
   const [modo, setModo] = useState<Modo>("entrar");
   const [mostrarSenha, setMostrarSenha] = useState(false);

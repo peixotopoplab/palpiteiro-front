@@ -44,7 +44,7 @@ interface ContaPageProps {
 
 export default async function ContaPage({ searchParams }: ContaPageProps) {
   const user = await getCurrentUser();
-  if (!user) redirect("/entrar?redirect=/conta");
+  if (!user) redirect("/entrar");
   const { pagamento } = await searchParams;
   const produtoVip = await getProdutoVip();
   const precoMensal = produtoVip?.tipo_desconto === "fixo" ? Number(produtoVip.valor_desconto) : undefined;

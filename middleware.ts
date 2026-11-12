@@ -92,7 +92,7 @@ export async function middleware(request: NextRequest) {
   if (rotaProtegida && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/entrar";
-    url.searchParams.set("redirect", pathname);
+    url.search = "";
     return NextResponse.redirect(url);
   }
 
