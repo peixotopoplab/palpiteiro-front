@@ -24,7 +24,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("id, nome, email, status")
+    .select("id, nome, email, status, trial_expira_em")
     .eq("id", authUser.id)
     .single();
 
@@ -153,6 +153,27 @@ export const getConcursoVigente = cache(async (): Promise<ConcursoVigente | null
 export function getUserState(user: CurrentUser | null): UserState {
   if (!user) return "guest";
   return user.status === "vip" ? "vip" : "free";
+}
+
+/**
+ * Trial ativo: conta Free com trial_expira_em no futuro.
+ * Dá ACESSO ao conteúdo VIP, mas NÃO é assinatura paga — por isso getUserState
+ * (que responde "já assina?") continua olhando só user.status.
+ */
+export function emTrial(user: CurrentUser | null): boolean {
+  if (!user || user.status === "vip" || !user.trial_expira_em) return false;
+  return new Date(user.trial_expira_em).getTime() > Date.now();
+}
+
+/** Acesso ao conteúdo completo: assinante pago OU trial ativo. */
+export function temAcessoVip(user: CurrentUser | null): boolean {
+  return !!user && (user.status === "vip" || emTrial(user));
+}
+
+/** Status a passar para queries que truncam conteúdo (null = visitante). */
+export function statusDeAcesso(user: CurrentUser | null): UserStatus | null {
+  if (!user) return null;
+  return temAcessoVip(user) ? "vip" : "free";
 }
 
 /** Histórico de análises Loteca — limitado a 10 */

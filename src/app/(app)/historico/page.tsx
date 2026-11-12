@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Lock, Trophy, ChevronLeft } from "lucide-react";
-import { getCurrentUser, getUserState } from "@/lib/queries";
+import { getCurrentUser, getUserState, temAcessoVip } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { HistoricoCTAVip } from "./historico-cta-vip";
 
@@ -51,7 +51,7 @@ export default async function HistoricoPage({ searchParams }: PageProps) {
 
   const user = await getCurrentUser();
   const userState = getUserState(user);
-  const isVip = userState === "vip";
+  const isVip = temAcessoVip(user);
 
   const { analises, total } = await getHistorico(pagina);
   const totalPaginas = Math.ceil(total / POR_PAGINA);

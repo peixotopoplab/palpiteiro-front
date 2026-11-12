@@ -6,7 +6,7 @@ import {
   CheckCircle2, CreditCard, Mail, Bell,
   BellOff, FileText, HelpCircle, Calendar, UserCheck, Clock
 } from "lucide-react";
-import { getCurrentUser } from "@/lib/queries";
+import { getCurrentUser, emTrial } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { CupomForm } from "./cupom-form";
@@ -80,7 +80,11 @@ export default async function ContaPage({ searchParams }: ContaPageProps) {
         <div className="grid grid-cols-2 gap-2 pt-1">
           <div className="flex items-center gap-2 text-label-sm text-text-muted">
             <UserCheck className="size-3.5 shrink-0 text-tertiary" />
-            {isVip ? "Assinante VIP" : "Plano Gratuito"}
+            {isVip
+              ? "Assinante VIP"
+              : emTrial(user) && user.trial_expira_em
+                ? `Trial VIP até ${new Date(user.trial_expira_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`
+                : "Plano Gratuito"}
           </div>
           {subscription?.data_inicio && (
             <div className="flex items-center gap-2 text-label-sm text-text-muted">

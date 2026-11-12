@@ -6,7 +6,7 @@ import { MatchCard } from "@/components/match-card";
 import { PaywallCard } from "@/components/paywall-card";
 import { AnaliseTracker } from "@/components/analise-tracker";
 import { formatarDataJogos } from "@/types/analise";
-import { getAnaliseBySlug, getCurrentUser, getProdutoVip, getUserState } from "@/lib/queries";
+import { getAnaliseBySlug, getConcursoVigente, getCurrentUser, getProdutoVip, getUserState, statusDeAcesso } from "@/lib/queries";
 import { AnaliseConcursoClient } from "./analise-concurso-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -27,16 +27,22 @@ interface PageProps {
 export default async function AnalisePage({ params }: PageProps) {
   const { slug } = await params;
 
-  const [user, produtoVip] = await Promise.all([
+  const [user, produtoVip, concurso] = await Promise.all([
     getCurrentUser(),
     getProdutoVip(),
+    getConcursoVigente(),
   ]);
   const userState = getUserState(user);
-  const analise = await getAnaliseBySlug(slug, user?.status ?? null);
+  const analise = await getAnaliseBySlug(slug, statusDeAcesso(user));
   if (!analise) notFound();
 
   const precoMensal = produtoVip?.tipo_desconto === "fixo" ? Number(produtoVip.valor_desconto) : undefined;
   const { dados, totalJogos } = analise;
+  // Só mostra o relógio se o concurso vigente for o mesmo da análise e estiver aberto
+  const dataFechamento =
+    concurso && concurso.status === "aberto" && concurso.numero === analise.concurso_numero
+      ? concurso.data_fechamento
+      : null;
   const qtdBloqueados = dados.jogos.filter((j) => "bloqueado" in j && j.bloqueado).length;
   const qtdLiberados = totalJogos - qtdBloqueados;
 
@@ -76,7 +82,7 @@ export default async function AnalisePage({ params }: PageProps) {
         qtdLiberados={qtdLiberados}
         userState={userState}
         precoMensal={precoMensal}
-        dataFechamento={null}
+        dataFechamento={dataFechamento}
       />
 
       {/* Link glossário */}

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, ClipboardList, Trophy } from "lucide-react";
-import { getCurrentUser, getAnalises, getProdutoVip, getUserState } from "@/lib/queries";
+import {
+  getCurrentUser, getAnalises, getAnaliseBySlug, getConcursoVigente, getProdutoVip,
+  getUserState, emTrial, statusDeAcesso, temAcessoVip,
+} from "@/lib/queries";
+import { montarJogosMapa, montarSugestao } from "@/lib/mapa-rodada";
+import { MapaRodada } from "@/components/home/mapa-rodada";
 import { HomeCTAVip } from "@/components/home-cta-vip";
 import { EmConstrucaoPopup } from "@/components/em-construcao-popup";
 
@@ -11,14 +16,28 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [user, analises, produtoVip] = await Promise.all([
+  const [user, analises, produtoVip, concurso] = await Promise.all([
     getCurrentUser(),
     getAnalises(1),
     getProdutoVip(),
+    getConcursoVigente(),
   ]);
-  const userState = getUserState(user);
+  const userState = getUserState(user); // "já assina?" — trial NÃO conta
   const isVip = userState === "vip";
+  const acesso = temAcessoVip(user) ? "vip" : user ? "free" : "guest"; // acesso ao conteúdo (inclui trial)
+  const trial = emTrial(user);
   const analiseAtiva = analises[0] ?? null;
+
+  // O mapa usa a análise já truncada por plano no servidor: o navegador nunca
+  // recebe probabilidades de jogos bloqueados nem a sugestão do modelo sem acesso.
+  const analise = analiseAtiva ? await getAnaliseBySlug(analiseAtiva.slug, statusDeAcesso(user)) : null;
+  const jogosMapa = analise ? montarJogosMapa(analise.dados.jogos) : [];
+  const sugestao = analise ? montarSugestao(analise) : null;
+  const mesmoConcurso = !!(analise && concurso && concurso.numero === analise.concurso_numero);
+  const dataFechamento =
+    analise && concurso && concurso.status === "aberto" && concurso.numero === analise.concurso_numero
+      ? concurso.data_fechamento
+      : null;
   const precoMensal = produtoVip?.tipo_desconto === "fixo" ? Number(produtoVip.valor_desconto) : undefined;
 
   return (
@@ -68,6 +87,33 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Trial: dá acesso completo, mas não é assinatura — mantém o convite para assinar */}
+      {trial && user?.trial_expira_em && (
+        <p className="rounded-md border border-badge-vip/30 bg-badge-vip/5 px-3 py-2 text-label-sm text-text-muted">
+          Trial VIP ativo até{" "}
+          <span className="text-text-primary">
+            {new Date(user.trial_expira_em).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}
+          </span>
+          .{" "}
+          <Link href="/assinar" className="text-badge-vip underline underline-offset-2">
+            Assine para manter o acesso
+          </Link>
+        </p>
+      )}
+
+      {/* Mapa da rodada — campo interativo (modo Modelo e modo Meu volante) */}
+      {analise && jogosMapa.length > 0 && (
+        <MapaRodada
+          jogos={jogosMapa}
+          slug={analise.slug}
+          concursoNumero={analise.concurso_numero}
+          acesso={acesso}
+          dataFechamento={dataFechamento}
+          levarAoSimulador={mesmoConcurso}
+          sugestao={sugestao}
+        />
+      )}
 
       {/* Simulador */}
       <Link href="/simulador">

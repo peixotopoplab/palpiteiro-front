@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { Clock } from "lucide-react";
+import { CountdownFechamento } from "@/components/countdown-fechamento";
 import { MatchCard } from "@/components/match-card";
 import { PaywallCard } from "@/components/paywall-card";
 import type { JogoExibicao, Jogo } from "@/types/analise";
@@ -17,39 +17,6 @@ function getRisco(jogo: Jogo): "favorito" | "equilibrado" | "zebra" {
   const max = Math.max(jogo.probabilidades.p1, jogo.probabilidades.pX, jogo.probabilidades.p2);
   if (max >= 50) return "favorito";
   return "equilibrado";
-}
-
-function Countdown({ dataFechamento }: { dataFechamento: string | null }) {
-  const [texto, setTexto] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!dataFechamento) return;
-    const alvo = new Date(dataFechamento).getTime();
-    const tick = () => {
-      const diff = alvo - Date.now();
-      if (diff <= 0) { setTexto("Encerrado"); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setTexto(
-        d > 0
-          ? `Encerra em: ${d} dia${d !== 1 ? "s" : ""}, ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-          : `Encerra em: ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-      );
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [dataFechamento]);
-
-  if (!texto) return null;
-  return (
-    <div className="flex items-center gap-1.5 text-label-sm text-badge-vip">
-      <Clock className="size-3.5 animate-pulse" />
-      <span className="tabular-nums">{texto}</span>
-    </div>
-  );
 }
 
 interface Props {
@@ -106,7 +73,7 @@ export function AnaliseConcursoClient({
     <div onClick={jogoAberto !== null ? fecharTudo : undefined} className={cn(jogoAberto !== null && "cursor-pointer")}>
       {/* Chips + Modo + Countdown */}
       <div className="space-y-2 mb-3" onClick={(e) => e.stopPropagation()}>
-        {dataFechamento && <Countdown dataFechamento={dataFechamento} />}
+        {dataFechamento && <CountdownFechamento dataFechamento={dataFechamento} />}
 
         {/* Chips de filtro */}
         <div className="flex flex-wrap gap-1.5">
