@@ -264,7 +264,7 @@ body {
 
 /* ── Mapa da rodada (Home): marcadores no campo ───────────────────────────── */
 @keyframes mk-kick {
-  from { transform: translate(180px, 176px) scale(0.6); opacity: 0; }
+  from { transform: translate(180px, 77px) scale(0.6); opacity: 0; }
   to   { transform: translate(var(--x), var(--y)) scale(1); opacity: 1; }
 }
 @keyframes mk-pulse {
