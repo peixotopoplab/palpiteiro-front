@@ -114,7 +114,7 @@ export function PushNotificationButton({ className }: { className?: string }) {
         await fetch("/api/push/subscribe", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
+          body: JSON.stringify({ endpoint: sub.endpoint, keys: { auth: sub.toJSON().keys?.auth } }), // `auth` = prova de posse do dispositivo
         });
         await sub.unsubscribe();
       }

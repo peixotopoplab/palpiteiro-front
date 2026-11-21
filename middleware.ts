@@ -28,18 +28,22 @@ const ROTAS_PROTEGIDAS = ["/conta", "/historico"];
 // instância única por região. Para multi-região, usar KV (Vercel KV ou Upstash).
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WEBHOOK = 30; // requests por janela
+const RATE_LIMIT_PUSH = 20; // /api/push/subscribe (POST + DELETE) por IP
 const RATE_LIMIT_JANELA_MS = 60 * 1000; // 1 minuto
 
-function checkRateLimit(ip: string): boolean {
+function checkRateLimit(chave: string, limite: number): boolean {
   const agora = Date.now();
-  const entry = rateLimitMap.get(ip);
+  const entry = rateLimitMap.get(chave);
 
   if (!entry || agora > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: agora + RATE_LIMIT_JANELA_MS });
+    if (rateLimitMap.size > 5000) {
+      for (const [k, v] of rateLimitMap) if (agora > v.resetAt) rateLimitMap.delete(k); // poda
+    }
+    rateLimitMap.set(chave, { count: 1, resetAt: agora + RATE_LIMIT_JANELA_MS });
     return true; // permitido
   }
 
-  if (entry.count >= RATE_LIMIT_WEBHOOK) {
+  if (entry.count >= limite) {
     return false; // bloqueado
   }
 
@@ -57,11 +61,24 @@ export async function middleware(request: NextRequest) {
       request.headers.get("x-real-ip") ??
       "unknown";
 
-    if (!checkRateLimit(ip)) {
+    if (!checkRateLimit(`webhook:${ip}`, RATE_LIMIT_WEBHOOK)) {
       console.warn("[middleware] Rate limit atingido para IP:", ip);
       return new NextResponse("Too Many Requests", { status: 429 });
     }
     // Webhook não precisa de renovação de sessão — retorna direto
+    return NextResponse.next({ request });
+  }
+
+  // Inscrição de push: rota pública com service role — limita por IP e não precisa renovar sessão
+  if (pathname === "/api/push/subscribe") {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      request.headers.get("x-real-ip") ??
+      "unknown";
+    if (!checkRateLimit(`push:${ip}`, RATE_LIMIT_PUSH)) {
+      console.warn("[middleware] Rate limit (push) atingido para IP:", ip);
+      return new NextResponse("Too Many Requests", { status: 429 });
+    }
     return NextResponse.next({ request });
   }
 
