@@ -7,13 +7,16 @@
  * aceitamos HTTPS nos hosts dos serviços de push dos navegadores.
  */
 
-/** Hosts dos serviços de push (casa o host exato ou qualquer subdomínio). */
-export const HOSTS_PUSH_PERMITIDOS = [
-  "fcm.googleapis.com", // Chrome, Edge, Brave, Opera, Samsung Internet
-  "updates.push.services.mozilla.com", // Firefox
-  "push.apple.com", // Safari / iOS (web.push.apple.com)
-  "notify.windows.com", // Edge legado / WNS
-] as const;
+/**
+ * Serviços de push aceitos. MANTER IGUAL ao Admin (`lib/push-hosts.ts`) e à consulta de
+ * auditoria do ledger de migrations — o Admin ignora no envio o que o Front não aceitaria.
+ *  - fcm.googleapis.com e updates.push.services.mozilla.com: host EXATO
+ *  - *.push.apple.com e *.notify.windows.com: ao menos um rótulo antes do sufixo
+ * HTTPS, sem credenciais, porta padrão.
+ */
+const HOSTS_EXATOS = ["fcm.googleapis.com", "updates.push.services.mozilla.com"] as const;
+const SUFIXOS_COM_SUBDOMINIO = ["push.apple.com", "notify.windows.com"] as const;
+const ROTULOS = /^[a-z0-9-]+(\.[a-z0-9-]+)*$/;
 
 export const LIMITES = { endpoint: 2048, userAgent: 300, corpo: 4096 } as const;
 
@@ -24,7 +27,10 @@ const CONTROLE = /[\u0000-\u001f\u007f]/;
 const CONTROLE_GLOBAL = /[\u0000-\u001f\u007f]/g;
 
 function hostPermitido(host: string): boolean {
-  return HOSTS_PUSH_PERMITIDOS.some((h) => host === h || host.endsWith("." + h));
+  if ((HOSTS_EXATOS as readonly string[]).includes(host)) return true;
+  return SUFIXOS_COM_SUBDOMINIO.some(
+    (s) => host.endsWith("." + s) && ROTULOS.test(host.slice(0, -(s.length + 1)))
+  );
 }
 
 /** Retorna o endpoint se for HTTPS, sem credenciais, porta padrão e host de serviço de push. */

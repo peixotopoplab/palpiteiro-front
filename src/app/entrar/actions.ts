@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
+import { TERMOS_VERSAO } from "@/lib/termos";
 import { enviarBoasVindas } from "@/lib/email";
 
 export interface AuthActionState {
@@ -56,38 +58,34 @@ export async function signUp(
   }
 
   const supabase = await createClient();
+
+  // Prova de consentimento: o gatilho handle_new_user() (migration 025) lê estes metadados e
+  // grava users.termos_* + audit_consentimento ('aceite_cadastro') na MESMA transação em que a
+  // conta nasce. É a ÚNICA origem desses dados — o navegador não tem policy de INSERT na
+  // auditoria, e escrever aqui depois do signUp era barrado pela RLS sem aviso.
+  // user_agent vem do servidor (cabeçalho da requisição), truncado. IP NÃO é enviado de
+  // propósito: seria dado pessoal adicional e exige decisão de privacidade (ver framework).
+  const userAgent = ((await headers()).get("user-agent") ?? "")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .slice(0, 300);
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
-    // termos_* nos metadados: permite que a trigger handle_new_user() grave o
-    // consentimento mesmo quando a confirmação de e-mail está ligada (sem sessão
-    // ainda, o update/insert abaixo roda como anon e a RLS pode bloqueá-lo).
     options: {
-      data: { nome, termos_aceitos: true, termos_versao: "v1.0-2026-09" },
+      data: {
+        nome,
+        termos_aceitos: true,
+        termos_versao: TERMOS_VERSAO,
+        ...(userAgent ? { user_agent: userAgent } : {}),
+      },
     },
   });
 
   if (error) return { error: traduzErro(error.message) };
 
-  // A trigger handle_new_user() (migration 006 + 007) cria a linha em
-  // public.users automaticamente. Aqui registramos o consentimento e o
-  // log de auditoria após a trigger ter rodado.
+  // A trigger handle_new_user() cria public.users e grava o consentimento (ver acima).
   if (data.user?.id) {
-    await supabase
-      .from("users")
-      .update({
-        termos_aceitos: true,
-        termos_versao: "v1.0-2026-09",
-        termos_aceitos_em: new Date().toISOString(),
-      })
-      .eq("id", data.user.id);
-
-    await supabase.from("audit_consentimento").insert({
-      user_id: data.user.id,
-      termos_versao: "v1.0-2026-09",
-      acao: "signup",
-    });
-
     // E-mail de boas-vindas — disparo assíncrono, sem bloquear o retorno
     // Se falhar, não quebra o cadastro (o usuário já foi criado)
     enviarBoasVindas({ nome, email }).catch((err) => {
